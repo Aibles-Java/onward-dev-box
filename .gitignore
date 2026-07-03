@@ -1,0 +1,14 @@
+# Local environment
+.env
+
+# Claude Code harness state (never commit)
+.claude/logs/
+.claude/memory/.nudge-guard
+.claude/memory/.last-seen-commit
+.claude/settings.local.json
+
+# OMC session state
+.omc/
+
+# OS noise
+.DS_Store

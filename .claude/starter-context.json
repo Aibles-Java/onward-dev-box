@@ -1,0 +1,72 @@
+{
+  "version": "1.4",
+  "tier": "full",
+  "stack": {
+    "language": "Bash (POSIX-ish shell scripts)",
+    "framework": "Docker Compose v2",
+    "build_tool": "GNU Make",
+    "test_framework": "shellcheck (static) + compose smoke boot in CI",
+    "package_manager": "none",
+    "detected_tools": ["docker-compose", "make", "shellcheck", "postgres", "sonarqube"]
+  },
+  "project": {
+    "name": "onward-dev-box",
+    "type": "dev-environment",
+    "team_size": 2,
+    "stage": "greenfield"
+  },
+  "architecture": {
+    "style": "compose-profiles",
+    "key_layers": [
+      { "name": "Compose services", "dir": "docker-compose.yml", "responsibility": "All local services, gated by profiles: core (postgres), quality (sonarqube), tools (adminer)" },
+      { "name": "Postgres init", "dir": "postgres/init/", "responsibility": "First-boot SQL: one database + owner user per consumer service" },
+      { "name": "SonarQube bootstrap", "dir": "sonarqube/", "responsibility": "Idempotent first-run config: admin password, projects, tokens, shared quality gate" },
+      { "name": "Scripts", "dir": "scripts/", "responsibility": "doctor (preflight), wait-for, seed, smoke-test helpers" },
+      { "name": "Entrypoint", "dir": "Makefile", "responsibility": "Single developer interface: make up/down/run/sonar/seed/smoke/doctor" },
+      { "name": "Docs", "dir": "docs/", "responsibility": "INFRASTRUCTURE.md (plan + port registry), RUNBOOK.md, adr/, CODEMAPS/" }
+    ],
+    "entry_points": ["Makefile", "docker-compose.yml"],
+    "external_deps": [
+      { "service": "../feature_flag (sibling repo)", "purpose": "First consumer — its application.properties defines the DB/port contract this repo must satisfy", "env_var": "FF_DIR" },
+      { "service": "Docker Desktop / daemon", "purpose": "Runs all stateful services", "env_var": "" }
+    ],
+    "gotchas": [
+      "postgres/init/*.sql runs ONLY on first boot (empty volume) — adding a service later needs make nuke or a live-SQL helper",
+      "Compose credentials/ports must stay in sync with ../feature_flag/src/main/resources/application.properties — drift breaks the app silently",
+      "The port table in docs/INFRASTRUCTURE.md is the workspace-wide port registry — claim ports there before adding services",
+      "Consumer apps run on the HOST (./mvnw spring-boot:run), only stateful dependencies run in Docker",
+      "SonarQube Community analyzes one branch per project — no PR analysis locally"
+    ],
+    "build_order": [],
+    "test_isolation": ["shellcheck for scripts; CI boots the core profile and asserts Postgres health"],
+    "sensitive_areas": [
+      "postgres/init/ — credential definitions consumed by sibling repos",
+      ".claude/hooks/ — harness enforcement (memory gate); changes need explicit confirmation",
+      "docker-compose.yml port mappings — collisions break other workspace services"
+    ]
+  },
+  "conventions": {
+    "formatter": "shellcheck (lint only, no auto-formatter)",
+    "branch_strategy": "gitflow",
+    "commit_format": "conventional",
+    "coverage_target": "n/a (infra repo — CI gate is compose boot + shellcheck clean)",
+    "workflow_gates": ["plan-before-code", "code-review"]
+  },
+  "permissions": {
+    "preset": "shell-infra",
+    "disallowed_tools": [],
+    "readonly_paths": []
+  },
+  "hooks_selected": ["memory-system", "observability", "shellcheck-on-edit"],
+  "mcp_selected": [],
+  "agents_selected": ["drift-monitor"],
+  "skills_selected": ["git-workflow", "save-memory"],
+  "ssot": {
+    "adr": true,
+    "codemaps": true
+  },
+  "observability": {
+    "enabled": true
+  },
+  "collected_at": "2026-07-03T00:00:00Z"
+}

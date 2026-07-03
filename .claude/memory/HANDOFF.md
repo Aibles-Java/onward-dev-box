@@ -2,25 +2,32 @@
 
 *State for the next session. Overwritten by `/save-memory`.*
 
-## Where things stand (2026-07-03)
+## Current WIP (2026-07-03)
 
-- `docs/INFRASTRUCTURE.md` — full build plan written (phases 1–4, port registry §4);
-  **nothing implemented yet**: no docker-compose.yml, Makefile, or scripts.
-- Tier 3 Claude Code harness installed via /shipwithai-starter:init, ported from
-  `../feature_flag/.claude`: memory system + hooks, shellcheck hook, git-workflow +
-  save-memory skills, cross-repo drift-monitor agent, ADR-0001, CODEMAPS.
+- Repo is **planned but not implemented**: `docs/INFRASTRUCTURE.md` holds the full
+  build plan (phases 1–4 + port registry §4); no docker-compose.yml, Makefile, or
+  scripts exist yet.
+- Tier 3 harness fully installed AND active: `settings.json` hook wiring was
+  explicitly approved and applied (memory hooks, observe.py, shellcheck-on-edit,
+  push gate). Hooks live from the next session onward.
+- Git state: **zero commits**, unborn HEAD renamed `master` → `main` (matches GitHub
+  default). Remote `origin` is empty. Everything is untracked, awaiting first commit.
 
-## Blocked on the human
+## Context to Load
 
-1. ~~settings.json hook wiring~~ — DONE 2026-07-03: user explicitly approved,
-   full config applied (hooks active from the next session).
-2. `git config core.hooksPath .githooks` — enable the pre-push memory-gate backstop.
-3. Branch cleanup: local branch is `master`, default is `main`, and gitflow was
-   chosen — create/push `develop`, align local branch.
+- `decisions/0001-claude-code-harness-setup.md` — what was ported vs adapted vs skipped
+- `docs/adr/ADR-0001-dev-box-architecture.md` — shared Postgres/SonarQube design
+- `docs/INFRASTRUCTURE.md` §3 — the Phase 1 tool list to implement next
 
-## Next work
+## Next steps
 
-- Phase 1 of INFRASTRUCTURE.md §3: docker-compose.yml (profiles core/quality/tools),
-  postgres/init/01-init-databases.sql, .env.example, Makefile, doctor.sh, wait-for.sh.
-- Companion PR to feature_flag afterwards: retire its local docker-compose.yml,
-  update its CLAUDE.md quick-start (ADR-0001 decision 6).
+1. First commit + gitflow bootstrap (user has the commands, not yet run):
+   `git add -A && git commit -m "chore: bootstrap claude code harness and dev-box docs"`,
+   push `main`, then create/push `develop`. The initial push passes the memory gate
+   because `.claude/memory/` is in the commit.
+2. `git config core.hooksPath .githooks` — arm the git-side memory-gate backstop.
+3. Implement Phase 1 of INFRASTRUCTURE.md: docker-compose.yml (profiles
+   core/quality/tools), postgres/init/01-init-databases.sql, .env.example, Makefile,
+   scripts/doctor.sh, scripts/wait-for.sh.
+4. After Phase 1: companion PR to ../feature_flag retiring its local
+   docker-compose.yml (ADR-0001 decision 6).

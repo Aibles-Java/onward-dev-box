@@ -128,8 +128,11 @@ Preflight check that fails fast with actionable messages:
 - ≥ 4 GB memory allocated to Docker when the `quality` profile is requested.
 
 #### 1.6 `scripts/wait-for.sh`
-Small helper polling a TCP port / HTTP health URL with timeout, used by `make up`
-so `make run` never races a cold database.
+Small helper polling a TCP port / HTTP health URL (optionally requiring a body
+match, e.g. SonarQube's status = `UP`) with timeout. Container-side waits are
+handled by compose healthchecks + `up --wait` (so `make up`/`make run` don't
+need it); this covers waits compose can't see — host-run processes (the app on
+`8081` for `make smoke`) and API-level readiness (`sonarqube/bootstrap.sh`, 2.1).
 
 ### Phase 2 — Quality stack (SonarQube local parity)
 

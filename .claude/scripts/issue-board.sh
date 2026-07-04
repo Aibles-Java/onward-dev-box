@@ -6,9 +6,14 @@
 # Usage:
 #   issue-board.sh start <issue#> [assignee]   # assign + move card to "In progress"
 #   issue-board.sh ready <issue#>              # move card to "Ready For Testing"
-#   issue-board.sh done  <issue#>              # move card to "Done"
+#   issue-board.sh done  <issue#>              # move card to "Done" + close the issue
 #   issue-board.sh status <issue#>             # print the card's current status
 #   issue-board.sh estimate <issue#> <SIZE> <hours>  # set Size (XS|S|M|L|XL) + Estimate
+#
+# `done` also runs `gh issue close`, because feature PRs merge into `develop`
+# (gitflow), not this repo's default branch (`main`) — so GitHub's closing
+# keywords (`Closes #N`) in a feature PR body never auto-close the issue. See
+# issue #28.
 #
 # `assignee` defaults to the authenticated gh user (whoever is driving), so the
 # board reflects the actual developer rather than a hardcoded name.
@@ -115,7 +120,11 @@ case "$cmd" in
     set_status "In progress"
     ;;
   ready) set_status "Ready For Testing" ;;
-  done)  set_status "Done" ;;
+  done)
+    set_status "Done"
+    gh issue close "$issue" --repo "$REPO" --comment "Closed via issue-board.sh done (merged through develop, so closing keywords didn't fire)." >/dev/null
+    echo "issue #$issue → closed"
+    ;;
   status) print_status ;;
   estimate)
     size="${3:-}"; hours="${4:-}"

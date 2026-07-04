@@ -64,7 +64,8 @@ If a push is legitimately memory-less (e.g. a pure typo fix), override explicitl
 ### 4 — Open the PR
 
 Use the `create-pr` skill. Base is `develop` for `feature/*`. Reference the issue
-(e.g. `Closes #<issue#>`) in the Related issue section.
+(e.g. `Closes #<issue#>`) in the Related issue section — this is documentation only;
+see **Closing issues** below for why GitHub won't actually auto-close it.
 
 ### 5 — Move to Ready For Testing (right after the PR opens)
 
@@ -79,6 +80,23 @@ The card moves to **Ready For Testing**, signalling the work is up for review/QA
 ```bash
 .claude/scripts/issue-board.sh done <issue#>
 ```
+
+This moves the card to **Done** *and* closes the issue (`gh issue close`) — see
+**Closing issues** below for why the close has to be explicit.
+
+## Closing issues (feature PRs never auto-close them)
+
+GitHub's closing keywords (`Closes #N`, `Fixes #N`, …) only fire when the PR merges
+into the repo's **default branch**. This repo's default branch is `main`, but every
+feature PR merges into `develop` (gitflow) — so `Closes #N` in a feature PR body is
+documentation, not a live trigger, and the issue would otherwise stay open until
+someone closes it by hand (as happened with #9 / PR #27).
+
+Decision: `issue-board.sh done` explicitly runs `gh issue close`, so the one command
+that marks a card **Done** also closes its issue — no separate manual step, no
+reliance on a `develop` → `main` release PR (closing keywords don't fire
+retroactively either). Still write `Closes #N` in feature PR bodies for traceability;
+just don't rely on it to close anything. See issue #28.
 
 ## Decision comments (human-in-the-loop)
 

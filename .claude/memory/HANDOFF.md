@@ -4,29 +4,31 @@
 
 ## Current WIP (2026-07-05)
 
-- Branch `feature/issue-9-verify-phase1` (issue #9, verification gate for
-  Phase 1). Ran the full `docs/INFRASTRUCTURE.md` §6 Phase 1 checklist
-  end-to-end on this machine — every item passed, no code fixes were needed.
-  Only change: `docs/INFRASTRUCTURE.md` §6 checkboxes ticked for the four
-  Phase 1 items (clean boot, nuke/up, doctor.sh, no-secrets); left the two
-  Phase 2-only boxes (`make sonar`, `make smoke`) unchecked.
-- Full verification method + results in `decisions/0010-verify-phase1-clean-machine.md`.
-- Issue #8 (wait-for.sh) merged as PR #26 — its card should already be Done;
-  if not, `issue-board.sh done 8` + calibration Actual/Δ.
+- Branch `feature/issue-28-close-issue-on-done` (issue #28, closing-keyword
+  gap for feature PRs). Implemented option 1 from the issue: `.claude/scripts/issue-board.sh done`
+  now runs `gh issue close` (with an explanatory comment) right after moving
+  the board card to Done. Updated `issue-workflow` SKILL.md with a "Closing
+  issues" section explaining why `Closes #N` never auto-fires on `feature/*`
+  → `develop` merges. Rationale in `decisions/0011-close-issue-on-done.md`.
+- PR not yet opened for #28 as of this handoff; next session (or continuation)
+  should push, open the PR (Closes #28, base `develop`), then
+  `issue-board.sh ready 28`.
+- Issue #9 (Phase 1 verification) merged as PR #27 — already reflects the
+  *old* manual-close behavior this issue is fixing; no action needed there.
 - Calibration `Actual`/`Δ` for #3–#9 still empty — needs human's actual hours.
 
 ## Context to Load
 
-- `decisions/0010-verify-phase1-clean-machine.md` — Phase 1 verification method
-  and results (issue #9)
-- `docs/INFRASTRUCTURE.md` §3 — Phase 1 complete and now verified; next is
+- `decisions/0011-close-issue-on-done.md` — why/how `issue-board.sh done`
+  now closes issues (issue #28)
+- `docs/INFRASTRUCTURE.md` §3 — Phase 1 complete and verified; next is
   Phase 2 (2.1 sonarqube/bootstrap.sh, 2.2 `make sonar`)
 
 ## Next steps
 
-1. PR for `feature/issue-9-verify-phase1` → `develop` (Closes #9): open + card
-   to Ready For Testing; when merged, `issue-board.sh done 9` + calibration
-   Actual/Δ.
+1. Push `feature/issue-28-close-issue-on-done`, open PR (Closes #28, base
+   `develop`), move card to Ready For Testing. When merged, use the *new*
+   `issue-board.sh done 28` behavior to confirm it actually closes the issue.
 2. Phase 2: `sonarqube/bootstrap.sh` (2.1 — uses
    `wait-for.sh -e UP http://localhost:9000/api/system/status`), then
    `make sonar` (2.2).

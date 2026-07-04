@@ -5,6 +5,7 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [Makefile lifecycle targets](decisions/0006-makefile-lifecycle-targets.md) — compose v2 `--wait` replaces wait-for.sh in `make up`; profile-gated services mean `down`/`logs`/`nuke` must pass all `--profile` flags (bare `down` matches nothing); `make db` is password-less via container-local trust; no dead targets
 - [.env.example tunables](decisions/0005-env-example-tunables.md) — every compose `${VAR}` documented with identical defaults (empty `.env` ≡ copied example); image tags parameterized (`POSTGRES_TAG`, `ADMINER_TAG`); contract creds live in init SQL, not env
 - [Idempotent init SQL](decisions/0004-idempotent-init-sql.md) — DO-block roles + `\gexec` databases so postgres/init SQL re-applies to a live instance; contract credentials verbatim; cross-repo verify via `SPRING_DATASOURCE_URL` override on port 5433
 - [Compose authoring choices](decisions/0003-compose-authoring-choices.md) — postgres dual-profile (core+quality) for depends_on, fixed `onward` network name, postgres superuser ≠ ff_user (init SQL owns per-service users), sonarqube:community has curl not wget

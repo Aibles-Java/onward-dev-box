@@ -5,6 +5,7 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [issue-board.sh done closes the issue](decisions/0011-close-issue-on-done.md) — issue #28: gitflow feature PRs merge into `develop`, not default branch `main`, so `Closes #N` never auto-fires; `done` now runs `gh issue close` explicitly
 - [Phase 1 clean-machine verification](decisions/0010-verify-phase1-clean-machine.md) — issue #9: full clean-boot, nuke/up, doctor.sh 3-failure-mode, no-secrets checks all pass; stubbed `docker`/`java` on PATH to trigger failures non-destructively
 - [wait-for.sh helper](decisions/0009-wait-for-helper.md) — auto-detected TCP (`/dev/tcp`) vs HTTP (curl) modes; `-e` body-match for SonarQube `status=UP` (200-while-STARTING gotcha); exits 0/1/2 = up/timeout/usage; no Makefile wiring (0007: compose `--wait` owns container waits)
 - [doctor.sh preflight](decisions/0008-doctor-preflight.md) — run-all-checks + per-FAIL `fix:` line; port free-or-ours via `docker ps --filter publish=` vs fixed container_names; quality checks arg-gated with 3.9 GB Docker-mem floor; macOS awk gotcha (use `-v` + single-quoted program); Linux vm.max_map_count branch untested (no Linux host)

@@ -27,10 +27,10 @@
 
 ## Next steps
 
-1. Open PR for `feature/issue-4-env-example` → `develop` (Closes #4), move board
-   card to Ready For Testing.
-2. Confirm + write the issue #4 estimate (see WIP above).
-3. Remaining Phase 1 items: Makefile (1.4), `scripts/doctor.sh`,
+1. PR #22 (`feature/issue-4-env-example` → `develop`, Closes #4) is open and the
+   card is Ready For Testing — awaiting review/merge; run
+   `issue-board.sh done 4` + fill calibration Actual/Δ when merged.
+2. Remaining Phase 1 items: Makefile (1.4), `scripts/doctor.sh`,
    `scripts/wait-for.sh`.
-4. After Phase 1: companion PR to `../feature_flag` retiring its
+3. After Phase 1: companion PR to `../feature_flag` retiring its
    docker-compose.yml (frees host 5432).

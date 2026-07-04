@@ -5,6 +5,7 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [wait-for.sh helper](decisions/0009-wait-for-helper.md) — auto-detected TCP (`/dev/tcp`) vs HTTP (curl) modes; `-e` body-match for SonarQube `status=UP` (200-while-STARTING gotcha); exits 0/1/2 = up/timeout/usage; no Makefile wiring (0007: compose `--wait` owns container waits)
 - [doctor.sh preflight](decisions/0008-doctor-preflight.md) — run-all-checks + per-FAIL `fix:` line; port free-or-ours via `docker ps --filter publish=` vs fixed container_names; quality checks arg-gated with 3.9 GB Docker-mem floor; macOS awk gotcha (use `-v` + single-quoted program); Linux vm.max_map_count branch untested (no Linux host)
 - [make run target](decisions/0007-make-run-target.md) — DB wait via idempotent `compose --profile core up -d --wait` (works from cold clone, no wait-for.sh); checkout check is `-x $(FF_DIR)/mvnw` with actionable error; 1.6 wait-for.sh narrowed to host-side waits (smoke on 8081)
 

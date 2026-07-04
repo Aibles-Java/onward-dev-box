@@ -2,8 +2,7 @@
 # Nothing in the daily loop should require raw docker commands.
 #
 # App-facing targets (sonar, seed, smoke) land with their own issues so this
-# file carries no dead targets. `make init` runs the doctor preflight once
-# scripts/doctor.sh exists (issue 1.5); until then it skips with a notice.
+# file carries no dead targets.
 
 COMPOSE ?= docker compose
 # Sibling checkout of the consumer app; the app runs on the host (debugger,
@@ -16,7 +15,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db run
+.PHONY: help init up up-all down nuke logs db run doctor
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -32,6 +31,9 @@ init: ## Copy .env.example → .env (if missing) and run the doctor preflight
 	else \
 		echo "doctor: scripts/doctor.sh not present yet (issue 1.5) — skipping preflight"; \
 	fi
+
+doctor: ## Environment preflight (PROFILE=quality adds the sonarqube host checks)
+	@scripts/doctor.sh $(PROFILE)
 
 up: ## Start the core profile (postgres) and wait until healthy
 	$(COMPOSE) $(CORE) up -d --wait

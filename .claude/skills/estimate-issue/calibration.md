@@ -5,3 +5,4 @@ reaches Done (see `SKILL.md` → Calibration). `Δ` = Actual − Estimate.
 
 | Issue | Estimated on | Size | Estimate (h) | Actual (h) | Δ | Basis / notes |
 |-------|--------------|------|--------------|------------|---|---------------|
+| 3 | 2026-07-04 | S | 3 | | | One init SQL file (given in issue) + fresh-boot psql verify + cross-repo feature_flag/Liquibase boot check around occupied port 5432 |

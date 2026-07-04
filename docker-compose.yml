@@ -1,0 +1,100 @@
+# onward-dev-box — canonical local infrastructure for the Aibles-Java workspace.
+# Supersedes the minimal docker-compose.yml inside feature_flag (single source of
+# infra truth; see docs/INFRASTRUCTURE.md §1.1 and §5).
+#
+# Profiles:
+#   core    → postgres              docker compose --profile core up -d
+#   quality → sonarqube (+postgres) docker compose --profile quality up -d
+#   tools   → adminer               docker compose --profile tools up -d
+#
+# All credentials here are documented LOCAL-ONLY defaults (see CLAUDE.md gotchas);
+# override via .env (never committed). Consumer apps run on the host, not here.
+
+name: onward-dev-box
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: onward_postgres
+    # Also in `quality`: sonarqube depends on this service, and Compose refuses
+    # to start a service whose dependency's profile is not activated. `core →
+    # postgres` still holds; this only makes `--profile quality` self-sufficient.
+    profiles: ["core", "quality"]
+    environment:
+      # Superuser for the shared instance. Per-service databases/users
+      # (feature_flag_db/ff_user, sonar/sonar) are created by first-boot SQL in
+      # postgres/init/ — see docs/INFRASTRUCTURE.md §1.2.
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Executed only on first boot (empty volume) — see CLAUDE.md gotchas.
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - onward
+
+  sonarqube:
+    image: sonarqube:${SONARQUBE_TAG:-community}
+    container_name: onward_sonarqube
+    profiles: ["quality"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/${SONAR_DB:-sonar}
+      SONAR_JDBC_USERNAME: ${SONAR_DB_USER:-sonar}
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:-sonar_password}
+    ports:
+      - "${SONAR_PORT:-9000}:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    # Elasticsearch (embedded) requirements; doctor.sh additionally checks
+    # vm.max_map_count >= 262144 on Linux hosts.
+    ulimits:
+      nofile:
+        soft: 131072
+        hard: 131072
+      nproc: 8192
+    healthcheck:
+      # The community image ships curl but not wget.
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      # SonarQube cold-boots slowly (ES index build).
+      start_period: 120s
+    networks:
+      - onward
+
+  adminer:
+    image: adminer:latest
+    container_name: onward_adminer
+    profiles: ["tools"]
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "${ADMINER_PORT:-8090}:8080"
+    networks:
+      - onward
+
+networks:
+  # Fixed name (not project-prefixed) so future workspace services can attach
+  # with `external: true` and resolve each other by service name.
+  onward:
+    name: onward
+
+volumes:
+  postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

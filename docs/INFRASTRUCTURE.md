@@ -232,9 +232,9 @@ existing `feature_flag/Dockerfile` remains for CI/image builds, not for the loca
 
 ## 6. Definition of done (Phase 1 + 2)
 
-- [ ] `make init && make up && make run` boots the app from a clean machine (with Docker + JDK 21) with zero manual steps.
-- [ ] `make nuke && make up` recreates a pristine database; Liquibase re-applies cleanly.
-- [ ] `make up-all` brings SonarQube to `UP`; `make sonar` publishes an analysis and prints the quality-gate result.
-- [ ] `make smoke` passes the Postman collection against a seeded local instance.
-- [ ] `doctor.sh` catches the three most common failures: Docker down, port 5432 taken, wrong Java version.
-- [ ] No secrets committed; all credentials are documented local-only defaults in `.env.example`.
+- [x] `make init && make up && make run` boots the app from a clean machine (with Docker + JDK 21) with zero manual steps. (verified issue #9)
+- [x] `make nuke && make up` recreates a pristine database; Liquibase re-applies cleanly. (verified issue #9)
+- [ ] `make up-all` brings SonarQube to `UP`; `make sonar` publishes an analysis and prints the quality-gate result. (Phase 2)
+- [ ] `make smoke` passes the Postman collection against a seeded local instance. (Phase 2)
+- [x] `doctor.sh` catches the three most common failures: Docker down, port 5432 taken, wrong Java version. (verified issue #9)
+- [x] No secrets committed; all credentials are documented local-only defaults in `.env.example`. (verified issue #9)

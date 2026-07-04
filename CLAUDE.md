@@ -18,7 +18,8 @@ built out per that plan — keep this file's Commands section in sync as targets
 
 ```bash
 # Makefile lifecycle targets (implemented — `make help` lists them)
-make init      # copy .env.example → .env; runs doctor preflight once scripts/doctor.sh lands
+make init      # copy .env.example → .env; runs the doctor preflight
+make doctor    # environment preflight (PROFILE=quality adds sonarqube host checks)
 make up        # start core profile (postgres) and wait until healthy
 make up-all    # core + quality (sonarqube) + tools (adminer)
 make down      # stop, keep volumes
@@ -28,8 +29,7 @@ make db        # psql shell into feature_flag_db (contract credentials)
 make run       # run ../feature_flag on the host (FF_DIR to override); waits for DB health
 
 # Planned targets, landing with their own issues (see docs/INFRASTRUCTURE.md §3)
-make sonar     # local SonarQube analysis of ../feature_flag
-make doctor    # environment preflight checks
+make sonar     # local SonarQube analysis of ../feature_flag checks
 
 # Lint all shell scripts
 shellcheck scripts/*.sh .claude/hooks/*.sh

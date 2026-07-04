@@ -17,12 +17,16 @@ built out per that plan — keep this file's Commands section in sync as targets
 ## Commands
 
 ```bash
-# Planned Makefile interface (see docs/INFRASTRUCTURE.md §3 until implemented)
-make init      # copy .env.example → .env, run doctor preflight
+# Makefile lifecycle targets (implemented — `make help` lists them)
+make init      # copy .env.example → .env; runs doctor preflight once scripts/doctor.sh lands
 make up        # start core profile (postgres) and wait until healthy
 make up-all    # core + quality (sonarqube) + tools (adminer)
 make down      # stop, keep volumes
 make nuke      # stop + delete volumes (fresh state; confirms first)
+make logs      # tail all service logs
+make db        # psql shell into feature_flag_db (contract credentials)
+
+# Planned targets, landing with their own issues (see docs/INFRASTRUCTURE.md §3)
 make run       # run ../feature_flag on the host against this infra
 make sonar     # local SonarQube analysis of ../feature_flag
 make doctor    # environment preflight checks

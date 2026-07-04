@@ -14,7 +14,7 @@ name: onward-dev-box
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:${POSTGRES_TAG:-16-alpine}
     container_name: onward_postgres
     # Also in `quality`: sonarqube depends on this service, and Compose refuses
     # to start a service whose dependency's profile is not activated. `core →
@@ -77,7 +77,7 @@ services:
       - onward
 
   adminer:
-    image: adminer:latest
+    image: adminer:${ADMINER_TAG:-latest}
     container_name: onward_adminer
     profiles: ["tools"]
     environment:

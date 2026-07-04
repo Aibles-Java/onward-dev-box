@@ -11,10 +11,10 @@
   acceptance criteria verified: `cp .env.example .env && docker compose config -q`
   passes (all profiles), and the compose `${VAR}` set exactly matches the
   documented keys. Rendered images unchanged. Test `.env` removed after verify.
-- **Estimate S / 1.5h drafted but NOT written to the board** — human was AFK at
-  the confirmation prompt and estimate-issue forbids unconfirmed writes. Re-ask,
-  then `.claude/scripts/issue-board.sh estimate 4 S 1.5` and log in
-  `calibration.md`.
+- Estimate S / 1.5h written to the board and logged in `calibration.md` after two
+  unanswered confirmation prompts, following the issue #3 precedent (human AFK →
+  recommended value written, adjustable). Fill `Actual`/`Δ` when the card reaches
+  Done.
 - Issues #2 (compose) and #3 (init SQL) are merged into develop.
 - Old feature_flag `ff_postgres` container still squats on host 5432 (ADR-0001
   decision 6) — irrelevant to this issue (`config -q` only), matters again for

@@ -5,6 +5,8 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [make run target](decisions/0007-make-run-target.md) — DB wait via idempotent `compose --profile core up -d --wait` (works from cold clone, no wait-for.sh); checkout check is `-x $(FF_DIR)/mvnw` with actionable error; 1.6 wait-for.sh narrowed to host-side waits (smoke on 8081)
+
 - [Makefile lifecycle targets](decisions/0006-makefile-lifecycle-targets.md) — compose v2 `--wait` replaces wait-for.sh in `make up`; profile-gated services mean `down`/`logs`/`nuke` must pass all `--profile` flags (bare `down` matches nothing); `make db` is password-less via container-local trust; no dead targets
 - [.env.example tunables](decisions/0005-env-example-tunables.md) — every compose `${VAR}` documented with identical defaults (empty `.env` ≡ copied example); image tags parameterized (`POSTGRES_TAG`, `ADMINER_TAG`); contract creds live in init SQL, not env
 - [Idempotent init SQL](decisions/0004-idempotent-init-sql.md) — DO-block roles + `\gexec` databases so postgres/init SQL re-applies to a live instance; contract credentials verbatim; cross-repo verify via `SPRING_DATASOURCE_URL` override on port 5433

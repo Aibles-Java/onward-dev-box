@@ -25,9 +25,9 @@ make down      # stop, keep volumes
 make nuke      # stop + delete volumes (fresh state; confirms first)
 make logs      # tail all service logs
 make db        # psql shell into feature_flag_db (contract credentials)
+make run       # run ../feature_flag on the host (FF_DIR to override); waits for DB health
 
 # Planned targets, landing with their own issues (see docs/INFRASTRUCTURE.md §3)
-make run       # run ../feature_flag on the host against this infra
 make sonar     # local SonarQube analysis of ../feature_flag
 make doctor    # environment preflight checks
 

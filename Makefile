@@ -1,11 +1,14 @@
 # onward-dev-box — single developer entrypoint (docs/INFRASTRUCTURE.md §3, item 1.4).
 # Nothing in the daily loop should require raw docker commands.
 #
-# App-facing targets (run, sonar, seed, smoke) land with their own issues so this
+# App-facing targets (sonar, seed, smoke) land with their own issues so this
 # file carries no dead targets. `make init` runs the doctor preflight once
 # scripts/doctor.sh exists (issue 1.5); until then it skips with a notice.
 
 COMPOSE ?= docker compose
+# Sibling checkout of the consumer app; the app runs on the host (debugger,
+# hot reload), only its stateful dependencies run in compose.
+FF_DIR  ?= ../feature_flag
 # Every service is profile-gated, so lifecycle commands must enable profiles
 # explicitly — a bare `docker compose down` would match no services.
 CORE     = --profile core
@@ -13,7 +16,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db
+.PHONY: help init up up-all down nuke logs db run
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -53,3 +56,13 @@ logs: ## Tail logs of all running services
 
 db: ## psql shell into feature_flag_db (cross-repo contract credentials)
 	$(COMPOSE) $(CORE) exec postgres psql -U ff_user -d feature_flag_db
+
+run: ## Run feature_flag on the host against this infra (override path with FF_DIR=…)
+	@if [ ! -x "$(FF_DIR)/mvnw" ]; then \
+		echo "error: no feature_flag checkout at '$(FF_DIR)' (expected an executable mvnw there)"; \
+		echo "  clone it as a sibling:  git clone https://github.com/Aibles-Java/feature_flag.git $(FF_DIR)"; \
+		echo "  or point at an existing checkout:  make run FF_DIR=/path/to/feature_flag"; \
+		exit 1; \
+	fi
+	$(COMPOSE) $(CORE) up -d --wait
+	cd "$(FF_DIR)" && ./mvnw spring-boot:run

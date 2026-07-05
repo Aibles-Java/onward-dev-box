@@ -142,10 +142,13 @@ First-run automation against the SonarQube API:
 2. Change the default `admin/admin` password to `${SONAR_ADMIN_PASSWORD}`.
 3. Create project `feature_flag` (key `aibles:feature_flag`).
 4. Generate an analysis token and write it to `.env` (`SONAR_TOKEN=`).
-5. Create/assign a quality gate mirroring the team gate (coverage ≥ current ratchet,
-   0 new blocker issues) — keep the gate definition in a checked-in JSON so DEV and
-   SIT (future `onward-infras`) configure identical gates.
-- **Acceptance:** re-runnable without error (idempotent); token lands in `.env`.
+5. Create/update the quality gate from the checked-in `sonarqube/quality-gate.json`
+   (coverage ≥ current ratchet, 0 new blocker issues) and assign it to
+   `aibles:feature_flag` — DEV (this repo) and SIT (future `onward-infras`) both
+   read this same file so the gates stay identical (issue #11).
+- **Acceptance:** re-runnable without error (idempotent); token lands in `.env`;
+  gate conditions in SonarQube match `quality-gate.json` exactly (SonarQube's
+  "Clean as You Code" defaults on a newly created gate are pruned to match).
 
 #### 2.2 `make sonar` — local analysis command
 Runs against the sibling repo:

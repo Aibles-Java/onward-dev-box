@@ -163,6 +163,12 @@ Lets developers see the exact quality-gate verdict **before** pushing, matching 
 SIT CI will enforce.
 - Note: requires no `pom.xml` change (`sonar-maven-plugin` resolves on the fly), but we
   may later add plugin + properties to `feature_flag/pom.xml` for version pinning.
+- **SonarQube Community limitation:** the Community edition analyzes **one branch per
+  project** and has no local PR/MR decoration — `make sonar` always publishes against
+  the project's single branch, and there is no local equivalent of a PR quality-gate
+  comment. Developers use `make sonar` for a pre-push, whole-branch quality read; PR-level
+  gating is a SIT/CI concern for a paid edition or an external check, not this repo
+  (verified issue #13).
 
 ### Phase 3 — Developer convenience
 
@@ -237,7 +243,7 @@ existing `feature_flag/Dockerfile` remains for CI/image builds, not for the loca
 
 - [x] `make init && make up && make run` boots the app from a clean machine (with Docker + JDK 21) with zero manual steps. (verified issue #9)
 - [x] `make nuke && make up` recreates a pristine database; Liquibase re-applies cleanly. (verified issue #9)
-- [ ] `make up-all` brings SonarQube to `UP`; `make sonar` publishes an analysis and prints the quality-gate result. (Phase 2)
+- [x] `make up-all` brings SonarQube to `UP`; `make sonar` publishes an analysis and prints the quality-gate result. (verified issue #13)
 - [ ] `make smoke` passes the Postman collection against a seeded local instance. (Phase 2)
 - [x] `doctor.sh` catches the three most common failures: Docker down, port 5432 taken, wrong Java version. (verified issue #9)
 - [x] No secrets committed; all credentials are documented local-only defaults in `.env.example`. (verified issue #9)

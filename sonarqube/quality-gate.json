@@ -1,0 +1,16 @@
+{
+  "name": "aibles-team-gate",
+  "conditions": [
+    {
+      "metric": "new_coverage",
+      "op": "LT",
+      "error": "0",
+      "note": "Ratchet: matches feature_flag's current JaCoCo baseline (0%). Raise toward the 80% target (docs/INFRASTRUCTURE.md §3) as coverage grows — DEV (this file) and SIT (onward-infras) must move together."
+    },
+    {
+      "metric": "new_blocker_violations",
+      "op": "GT",
+      "error": "0"
+    }
+  ]
+}

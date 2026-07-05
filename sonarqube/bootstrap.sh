@@ -6,11 +6,11 @@
 #   2. Change the default admin/admin password to ${SONAR_ADMIN_PASSWORD}.
 #   3. Create project `feature_flag` (key aibles:feature_flag) if it doesn't exist.
 #   4. (Re)generate an analysis token and write it to .env as SONAR_TOKEN=.
+#   5. Create/update the quality gate from the checked-in sonarqube/quality-gate.json
+#      and assign it to aibles:feature_flag (issue #11) — DEV and SIT (future
+#      onward-infras) both read this same file so the gates stay identical.
 #
-# The shared quality-gate definition (step 5 in issue #10) is out of scope here —
-# tracked as a separate issue per the checked-in JSON gate plan.
-#
-# Idempotent: safe to re-run after the project/token/password already exist.
+# Idempotent: safe to re-run after the project/token/password/gate already exist.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -31,6 +31,7 @@ BASE_URL="http://localhost:${SONAR_PORT}"
 PROJECT_KEY="aibles:feature_flag"
 PROJECT_NAME="feature_flag"
 TOKEN_NAME="onward-dev-box"
+GATE_FILE="$ROOT_DIR/sonarqube/quality-gate.json"
 
 : "${SONAR_ADMIN_PASSWORD:?bootstrap: SONAR_ADMIN_PASSWORD must be set in $ENV_FILE}"
 
@@ -90,3 +91,72 @@ else
 fi
 
 say "SONAR_TOKEN written to $ENV_FILE"
+
+# ── 5. Quality gate: create/update from checked-in JSON, assign to project ──
+
+[ -f "$GATE_FILE" ] || { echo "bootstrap: $GATE_FILE not found" >&2; exit 1; }
+
+GATE_NAME="$(jq -r '.name' "$GATE_FILE")"
+
+EXISTING_GATE="$(curl -fsS -G "${AUTH[@]}" "$BASE_URL/api/qualitygates/list" | jq --arg name "$GATE_NAME" '[.qualitygates[] | select(.name == $name)] | length')"
+if [ "$EXISTING_GATE" -gt 0 ]; then
+  say "quality gate '${GATE_NAME}' already exists — reconciling conditions"
+else
+  say "creating quality gate '${GATE_NAME}'"
+  curl -fsS "${AUTH[@]}" -X POST "$BASE_URL/api/qualitygates/create" \
+    --data-urlencode "name=${GATE_NAME}" \
+    >/dev/null
+fi
+
+GATE_SHOW="$(curl -fsS -G "${AUTH[@]}" "$BASE_URL/api/qualitygates/show" --data-urlencode "name=${GATE_NAME}")"
+
+while IFS= read -r cond; do
+  METRIC="$(jq -r '.metric' <<<"$cond")"
+  OP="$(jq -r '.op' <<<"$cond")"
+  ERROR="$(jq -r '.error' <<<"$cond")"
+
+  EXISTING_CONDITION_ID="$(jq -r --arg metric "$METRIC" '.conditions[]? | select(.metric == $metric) | .id' <<<"$GATE_SHOW")"
+
+  if [ -n "$EXISTING_CONDITION_ID" ]; then
+    say "updating condition '${METRIC}' on '${GATE_NAME}'"
+    curl -fsS "${AUTH[@]}" -X POST "$BASE_URL/api/qualitygates/update_condition" \
+      --data-urlencode "id=${EXISTING_CONDITION_ID}" \
+      --data-urlencode "metric=${METRIC}" \
+      --data-urlencode "op=${OP}" \
+      --data-urlencode "error=${ERROR}" \
+      >/dev/null
+  else
+    say "adding condition '${METRIC}' to '${GATE_NAME}'"
+    curl -fsS "${AUTH[@]}" -X POST "$BASE_URL/api/qualitygates/create_condition" \
+      --data-urlencode "gateName=${GATE_NAME}" \
+      --data-urlencode "metric=${METRIC}" \
+      --data-urlencode "op=${OP}" \
+      --data-urlencode "error=${ERROR}" \
+      >/dev/null
+  fi
+done < <(jq -c '.conditions[]' "$GATE_FILE")
+
+# SonarQube auto-adds its "Clean as You Code" default conditions to any newly
+# created custom gate (new_violations, new_duplicated_lines_density, ...).
+# The checked-in JSON is authoritative, so strip anything it doesn't list.
+GATE_SHOW="$(curl -fsS -G "${AUTH[@]}" "$BASE_URL/api/qualitygates/show" --data-urlencode "name=${GATE_NAME}")"
+DESIRED_METRICS="$(jq -r '[.conditions[].metric] | join(",")' "$GATE_FILE")"
+
+while IFS=$'\t' read -r id metric; do
+  say "removing condition '${metric}' from '${GATE_NAME}' (not in ${GATE_FILE##*/})"
+  curl -fsS "${AUTH[@]}" -X POST "$BASE_URL/api/qualitygates/delete_condition" \
+    --data-urlencode "id=${id}" \
+    >/dev/null
+done < <(jq -r --arg metrics "$DESIRED_METRICS" '
+  ($metrics | split(",")) as $desired
+  | .conditions[]? | select(([.metric] - $desired) | length > 0)
+  | [.id, .metric] | @tsv
+' <<<"$GATE_SHOW")
+
+say "assigning quality gate '${GATE_NAME}' to project '${PROJECT_KEY}'"
+curl -fsS "${AUTH[@]}" -X POST "$BASE_URL/api/qualitygates/select" \
+  --data-urlencode "gateName=${GATE_NAME}" \
+  --data-urlencode "projectKey=${PROJECT_KEY}" \
+  >/dev/null
+
+say "quality gate '${GATE_NAME}' assigned to '${PROJECT_KEY}'"

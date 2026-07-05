@@ -1,8 +1,8 @@
 # onward-dev-box — single developer entrypoint (docs/INFRASTRUCTURE.md §3, item 1.4).
 # Nothing in the daily loop should require raw docker commands.
 #
-# App-facing targets (sonar, seed, smoke) land with their own issues so this
-# file carries no dead targets.
+# App-facing targets (seed, smoke) land with their own issues so this file
+# carries no dead targets.
 
 COMPOSE ?= docker compose
 # Sibling checkout of the consumer app; the app runs on the host (debugger,
@@ -15,7 +15,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db run doctor
+.PHONY: help init up up-all down nuke logs db run doctor sonar
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -68,3 +68,23 @@ run: ## Run feature_flag on the host against this infra (override path with FF_D
 	fi
 	$(COMPOSE) $(CORE) up -d --wait
 	cd "$(FF_DIR)" && ./mvnw spring-boot:run
+
+sonar: ## Run local SonarQube analysis of feature_flag and print the quality-gate verdict
+	@if [ ! -x "$(FF_DIR)/mvnw" ]; then \
+		echo "error: no feature_flag checkout at '$(FF_DIR)' (expected an executable mvnw there)"; \
+		echo "  clone it as a sibling:  git clone https://github.com/Aibles-Java/feature_flag.git $(FF_DIR)"; \
+		echo "  or point at an existing checkout:  make sonar FF_DIR=/path/to/feature_flag"; \
+		exit 1; \
+	fi
+	@if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+	if [ -z "$${SONAR_TOKEN:-}" ]; then \
+		echo "error: SONAR_TOKEN is not set (sonarqube/bootstrap.sh has not been run yet)"; \
+		echo "  run:  make up-all && ./sonarqube/bootstrap.sh"; \
+		exit 1; \
+	fi; \
+	cd "$(FF_DIR)" && ./mvnw verify sonar:sonar \
+		-Dsonar.host.url=http://localhost:$${SONAR_PORT:-9000} \
+		-Dsonar.token="$$SONAR_TOKEN" \
+		-Dsonar.projectKey=aibles:feature_flag \
+		-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+		-Dsonar.qualitygate.wait=true

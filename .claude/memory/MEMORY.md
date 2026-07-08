@@ -5,6 +5,7 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [seed-feature-flag.sh](decisions/0016-seed-feature-flag.md) — issue #14: fixed demo email/org slug for idempotency detection; register returns empty 201 (no token) so script always follows with `/login`; SDK auth header is `X-Environment-Key` not `X-API-Key`; avoided `declare -A` (macOS bash 3.2); verified end-to-end incl. re-run failure
 - [make sonar target](decisions/0014-make-sonar-target.md) — issue #12/#13: `sonar.qualitygate.wait=true` added on top of issue's literal command (bare call doesn't print/block on the gate verdict); verified end-to-end incl. both FF_DIR/SONAR_TOKEN error guards
 - [quality-gate.json](decisions/0013-quality-gate-json.md) — issue #11: checked-in DEV/SIT-shared gate JSON; SonarQube auto-adds "Clean as You Code" conditions to new gates, so bootstrap.sh prunes anything not in the file; assigned per-project, never set as instance default
 - [sonar bootstrap.sh](decisions/0012-sonar-bootstrap.md) — issue #10: admin password policy needs upper+lower+digit; `curl --data-urlencode` implies POST unless `-G`; tokens re-generate via revoke-then-generate (no same-name overwrite)

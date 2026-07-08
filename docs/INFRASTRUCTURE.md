@@ -170,11 +170,23 @@ SIT CI will enforce.
 Web DB browser at `http://localhost:8090` — inspect Liquibase-managed tables without a
 local psql client. (Adminer over pgAdmin: single container, zero config.)
 
-#### 3.2 `scripts/seed-feature-flag.sh`
+#### 3.2 `scripts/seed-feature-flag.sh` — done (issue #14)
 Seeds a working dataset through the **Admin API** (not raw SQL, so it always respects
-the current schema): register a user, create org → project → environments (dev/sit/prod)
-→ a couple of flags, then print the SDK API key. Gives everyone the same demo state and
-makes the Postman collection instantly usable.
+the current schema): registers a fixed demo user (`demo@aibles.local`), creates an
+org (`aibles-demo`) → project → environments (dev/sit/prod) → two flags
+(`new-dashboard` BOOLEAN, `welcome-message` STRING), then prints each environment's
+SDK API key. Gives everyone the same demo state and makes the Postman collection
+instantly usable. Wired as `make seed` (override the app URL with `FF_APP_URL`,
+default `http://localhost:8081`).
+- Fixed demo email/org slug make re-runs detectable: register responding `409`
+  triggers a login instead of a hard failure, but a `409` on org creation means the
+  demo dataset already exists — the script fails with an explicit "already seeded"
+  message rather than creating duplicates (`make nuke && make up && make run` for a
+  clean instance to reseed).
+- **Gotcha:** despite the Postman collection's test script, `POST /api/v1/auth/register`
+  currently returns `201` with an **empty body** — no token. The script always follows
+  up with `POST /api/v1/auth/login` (fixed demo password) to obtain the JWT, whether
+  this is a fresh registration or a re-run.
 
 #### 3.3 `scripts/smoke-test.sh` (newman)
 Runs `feature_flag/docs/postman/Feature_Flag_Platform.postman_collection.json` against

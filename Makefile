@@ -1,8 +1,8 @@
 # onward-dev-box — single developer entrypoint (docs/INFRASTRUCTURE.md §3, item 1.4).
 # Nothing in the daily loop should require raw docker commands.
 #
-# App-facing targets (seed, smoke) land with their own issues so this file
-# carries no dead targets.
+# App-facing targets (smoke) land with their own issues so this file carries
+# no dead targets.
 
 COMPOSE ?= docker compose
 # Sibling checkout of the consumer app; the app runs on the host (debugger,
@@ -15,7 +15,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db run doctor sonar
+.PHONY: help init up up-all down nuke logs db run doctor sonar seed
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -88,3 +88,6 @@ sonar: ## Run local SonarQube analysis of feature_flag and print the quality-gat
 		-Dsonar.projectKey=aibles:feature_flag \
 		-Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
 		-Dsonar.qualitygate.wait=true
+
+seed: ## Seed a demo org/project/environments/flags via the Admin API (override URL with FF_APP_URL)
+	@scripts/seed-feature-flag.sh

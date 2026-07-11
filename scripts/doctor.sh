@@ -104,6 +104,17 @@ if [ -n "${JAVA_HOME:-}" ] && [ -n "$JAVA_VERSION_LINE" ]; then
   fi
 fi
 
+# ── CLI tooling ('make seed' drives the Admin API with curl + jq) ────────────
+
+for tool in curl jq; do
+  if command -v "$tool" >/dev/null 2>&1; then
+    ok "$tool on PATH"
+  else
+    fail "$tool not found on PATH — 'make seed' needs it to call the feature_flag Admin API" \
+         "install it: 'brew install $tool' (macOS) or your distro's package manager (Linux)"
+  fi
+done
+
 # ── Ports (free, or held by our own containers) ──────────────────────────────
 
 port_listener() {

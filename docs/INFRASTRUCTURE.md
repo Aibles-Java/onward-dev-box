@@ -182,10 +182,26 @@ the current schema): register a user, create org → project → environments (d
 → a couple of flags, then print the SDK API key. Gives everyone the same demo state and
 makes the Postman collection instantly usable.
 
-#### 3.3 `scripts/smoke-test.sh` (newman)
+#### 3.3 `scripts/smoke-test.sh` (newman) — script done (issue #15)
 Runs `feature_flag/docs/postman/Feature_Flag_Platform.postman_collection.json` against
-`http://localhost:8081` via `newman` (Node) or the dockerized `postman/newman` image.
-One command answers "is my local environment actually working end-to-end?".
+`http://localhost:8081` via `newman` (`npx newman` on the Node path, dockerized
+`postman/newman` as a no-Node fallback). One command answers "is my local
+environment actually working end-to-end?". Wired as `make smoke`. The collection's
+default `baseUrl` is `:8080`, so we override it to `:8081` at run time (we never
+edit the collection — it is owned by the feature_flag repo). Needs a **fresh** app:
+the collection registers fixed demo users and expects `201` on first registration,
+so re-running against a dirty DB fails at auth — reset with `make nuke && make run`.
+
+> **Known red (blocked on feature_flag, not this repo).** On a clean run the
+> collection currently reports 15/124 failing assertions, all traced to two
+> feature_flag-owned defects the smoke test correctly surfaces: (a) **collection
+> drift** — `POST /auth/register` returns `201` with an empty body, but the
+> collection expects a token in the response and never logs admin/viewer in
+> separately; (b) **app bug** — `GET /organisations/{id}/members` returns `500`
+> for the org owner in the trivial case, and the org creator is not recorded in
+> `organization_members` (`GET /organisations` → `[]`, `/members` → `403` for the
+> creator). `make smoke` cannot go green until feature_flag fixes both; the script
+> itself is complete and verified. Tracked upstream in feature_flag.
 
 #### 3.4 `docs/RUNBOOK.md`
 Day-1 guide: prerequisites, `make init && make up && make run`, URLs table, common

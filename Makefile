@@ -15,7 +15,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db run doctor sonar
+.PHONY: help init up up-all down nuke logs db run smoke doctor sonar
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -68,6 +68,9 @@ run: ## Run feature_flag on the host against this infra (override path with FF_D
 	fi
 	$(COMPOSE) $(CORE) up -d --wait
 	cd "$(FF_DIR)" && ./mvnw spring-boot:run
+
+smoke: ## Run feature_flag's Postman collection end-to-end via newman (needs a running, fresh app)
+	@scripts/smoke-test.sh
 
 sonar: ## Run local SonarQube analysis of feature_flag and print the quality-gate verdict
 	@if [ ! -x "$(FF_DIR)/mvnw" ]; then \

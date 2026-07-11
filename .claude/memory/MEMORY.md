@@ -5,6 +5,7 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [RUNBOOK.md day-1 guide](decisions/0018-runbook-day1-guide.md) — issue #16: `docs/RUNBOOK.md` from-clone-to-running-app guide; facts sourced from doctor.sh/compose/env not memory; quick start is `make init` then `make run` (run already ups+waits core); common-failures table mirrors doctor.sh fix lines; documents `make smoke` known-red up front. Docs-only, no §6 DoD box (Phase 3)
 - [issue #13 Phase 2 verification closed](decisions/0015-issue-13-phase2-verification.md) — re-verified live, added missing SonarQube Community limitation note to INFRASTRUCTURE.md (wasn't actually documented despite prior HANDOFF claim), checked off §6 DoD line
 - [make sonar target](decisions/0014-make-sonar-target.md) — issue #12/#13: `sonar.qualitygate.wait=true` added on top of issue's literal command (bare call doesn't print/block on the gate verdict); verified end-to-end incl. both FF_DIR/SONAR_TOKEN error guards
 - [quality-gate.json](decisions/0013-quality-gate-json.md) — issue #11: checked-in DEV/SIT-shared gate JSON; SonarQube auto-adds "Clean as You Code" conditions to new gates, so bootstrap.sh prunes anything not in the file; assigned per-project, never set as instance default

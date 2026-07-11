@@ -41,7 +41,7 @@ onward-dev-box/
 ├── Makefile                    # single entrypoint: make up / down / sonar / doctor ...
 ├── docs/
 │   ├── INFRASTRUCTURE.md       # this document
-│   └── RUNBOOK.md              # day-1 developer guide (to be written)
+│   └── RUNBOOK.md              # day-1 developer guide (done — issue #16)
 ├── postgres/
 │   └── init/
 │       └── 01-init-databases.sql   # creates feature_flag_db + sonar db/users
@@ -187,10 +187,11 @@ Runs `feature_flag/docs/postman/Feature_Flag_Platform.postman_collection.json` a
 `http://localhost:8081` via `newman` (Node) or the dockerized `postman/newman` image.
 One command answers "is my local environment actually working end-to-end?".
 
-#### 3.4 `docs/RUNBOOK.md`
+#### 3.4 `docs/RUNBOOK.md` — done (issue #16)
 Day-1 guide: prerequisites, `make init && make up && make run`, URLs table, common
 failures (port conflict, stale volume after schema change → `make nuke`), how to run
-Sonar locally.
+Sonar locally. Also covers the sibling-checkout layout, everyday `make` targets, and
+the known-red `make smoke` state (blocked on feature_flag#52).
 
 #### 3.5 CI for this repo (`.github/workflows/validate.yml`)
 Cheap guardrail: `docker compose config -q`, `shellcheck scripts/*.sh`, and a job that

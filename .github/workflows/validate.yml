@@ -1,0 +1,62 @@
+# Cheap CI guardrail for this repo (docs/INFRASTRUCTURE.md §3.5, issue #17).
+# Three fast checks so a broken compose file or shell script can't reach develop:
+#   1. compose config lints          (docker compose config -q)
+#   2. shell scripts pass shellcheck (scripts/*.sh + .claude/hooks/*.sh — CLAUDE.md)
+#   3. the `core` profile boots and Postgres reports healthy
+name: validate
+
+on:
+  pull_request:
+    branches: [develop]
+  # Also guard direct pushes to the integration branch (e.g. merge commits).
+  push:
+    branches: [develop]
+
+# A newer commit on the same ref supersedes in-flight runs.
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: compose config + shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Compose v2 ships preinstalled on ubuntu-latest; -q lints without booting.
+      - name: Lint docker-compose.yml
+        run: docker compose config -q
+
+      # shellcheck is preinstalled on ubuntu-latest. Mirror CLAUDE.md's command
+      # exactly so CI and the local lint stay in lockstep.
+      - name: shellcheck shell scripts
+        run: shellcheck scripts/*.sh .claude/hooks/*.sh
+
+  core-boot:
+    name: core profile boots healthy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # `--wait` blocks until every started service is healthy (or exits non-zero
+      # on timeout), so this single step asserts the healthcheck passes.
+      - name: Boot core profile
+        run: docker compose --profile core up -d --wait
+
+      - name: Assert Postgres is healthy
+        run: |
+          status="$(docker inspect --format '{{.State.Health.Status}}' onward_postgres)"
+          echo "onward_postgres health: $status"
+          [ "$status" = "healthy" ]
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose --profile core logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose --profile core down -v

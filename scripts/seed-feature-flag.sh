@@ -133,11 +133,16 @@ echo "seed: project    Demo Project ($PROJECT_ID)"
 
 # ── 5. Environments dev/sit/prod (apiKey returned once, here) ─────────────────
 
-# Fixed set of environments. Kept as plain variables (not an associative array)
-# so the script runs on the stock macOS bash 3.2 — matching the other scripts.
-# Only dev's id is needed later (to enable flags there); every env's apiKey is
-# reported. DEV_ID/*_KEY are plain variables (no associative array) so the
-# script runs on the stock macOS bash 3.2, matching the other scripts.
+# ORDER MATTERS: environments must be created before the flags (step 6). Flag
+# creation auto-seeds a FlagEnvironmentState row only for the environments that
+# already exist at that moment, and step 6's PUT /flags/{id}/environments/{envId}
+# 404s without that row. Reorder these two steps and the enable calls break with
+# a 404 that looks unrelated to the reorder.
+
+# Fixed set of environments. Only dev's id is needed later (to enable flags
+# there); every env's apiKey is reported. Kept as plain variables
+# (DEV_ID/*_KEY, no associative array) so the script runs on the stock macOS
+# bash 3.2, matching the other scripts.
 DEV_ID=""; DEV_KEY=""; SIT_KEY=""; PROD_KEY=""
 for name in dev sit prod; do
   req POST /api/v1/environments \

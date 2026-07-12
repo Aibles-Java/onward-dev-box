@@ -27,9 +27,11 @@ make nuke      # stop + delete volumes (fresh state; confirms first)
 make logs      # tail all service logs
 make db        # psql shell into feature_flag_db (contract credentials)
 make run       # run ../feature_flag on the host (FF_DIR to override); waits for DB health
+make seed      # seed demo data (org/project/env/flags) into feature_flag via its Admin API
+make sonar     # local SonarQube analysis of ../feature_flag checks
 
 # Planned targets, landing with their own issues (see docs/INFRASTRUCTURE.md §3)
-make sonar     # local SonarQube analysis of ../feature_flag checks
+make smoke     # end-to-end smoke test of the running stack (issue #15)
 
 # Lint all shell scripts
 shellcheck scripts/*.sh .claude/hooks/*.sh

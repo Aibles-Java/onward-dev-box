@@ -27,8 +27,11 @@ via API rather than writing SonarQube's tables directly.
 - **Not idempotent by design.** The SDK API key is returned exactly once, at
   environment creation (only its hash is stored). A re-run can't reproduce it, so
   the script does *not* try to be idempotent: if the seed user already exists
-  (register returns non-201 but login still works) it prints "already seeded" and
-  exits 0. Clean re-seed = `make nuke && make run && make seed`.
+  (register returns 409 Conflict — `DuplicateResourceException` →
+  `GlobalExceptionHandler` in feature_flag) but login still works, it prints
+  "already seeded" and exits 0. The guard checks any non-201 (not 409
+  specifically) because the preceding `expect ... 200` on login catches genuine
+  failures loudly first. Clean re-seed = `make nuke && make run && make seed`.
 - **bash subshell drops globals.** `X="$(req ...)"` runs `req` in a
   command-substitution subshell, so its `HTTP_CODE`/`LAST_BODY` global writes
   don't reach the parent — the classic symptom was "login failed (HTTP 201)"

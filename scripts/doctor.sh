@@ -4,11 +4,14 @@
 # Verifies the host can run the dev-box BEFORE anything boots: Docker daemon +
 # Compose v2, Java 21 (the consumer app runs on the host), and the workspace
 # ports (free, or held by our own containers). Pass `quality` to add the
-# SonarQube host requirements (vm.max_map_count on Linux, ≥ 4 GB Docker memory).
+# SonarQube host requirements (vm.max_map_count on Linux, ≥ 4 GB Docker memory),
+# and/or `seed` to add the CLI tooling `make seed` needs (curl + jq).
 #
 # Usage:
-#   scripts/doctor.sh            # core checks
-#   scripts/doctor.sh quality    # core + quality-profile checks
+#   scripts/doctor.sh              # core checks
+#   scripts/doctor.sh quality      # core + quality-profile checks
+#   scripts/doctor.sh seed         # core + 'make seed' tooling checks
+#   scripts/doctor.sh quality seed # core + both
 #
 # Runs every check (no early exit) so one pass shows all problems; each failure
 # prints an actionable fix. Exit 1 if any check failed, 0 otherwise.
@@ -18,10 +21,12 @@ REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ENV_FILE="$REPO_DIR/.env"
 
 QUALITY=false
+SEED=false
 for arg in "$@"; do
   case "$arg" in
     quality|--quality) QUALITY=true ;;
-    *) echo "usage: scripts/doctor.sh [quality]" >&2; exit 2 ;;
+    seed|--seed) SEED=true ;;
+    *) echo "usage: scripts/doctor.sh [quality] [seed]" >&2; exit 2 ;;
   esac
 done
 
@@ -104,16 +109,20 @@ if [ -n "${JAVA_HOME:-}" ] && [ -n "$JAVA_VERSION_LINE" ]; then
   fi
 fi
 
-# ── CLI tooling ('make seed' drives the Admin API with curl + jq) ────────────
+# ── Seed tooling ('make seed' drives the Admin API with curl + jq) ───────────
+# Gated behind `seed` (like the quality extras below): these are only needed by
+# 'make seed', so a plain 'make init'/'make up' must not fail for missing them.
 
-for tool in curl jq; do
-  if command -v "$tool" >/dev/null 2>&1; then
-    ok "$tool on PATH"
-  else
-    fail "$tool not found on PATH — 'make seed' needs it to call the feature_flag Admin API" \
-         "install it: 'brew install $tool' (macOS) or your distro's package manager (Linux)"
-  fi
-done
+if [ "$SEED" = true ]; then
+  for tool in curl jq; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      ok "$tool on PATH"
+    else
+      fail "$tool not found on PATH — 'make seed' needs it to call the feature_flag Admin API" \
+           "install it: 'brew install $tool' (macOS) or your distro's package manager (Linux)"
+    fi
+  done
+fi
 
 # ── Ports (free, or held by our own containers) ──────────────────────────────
 

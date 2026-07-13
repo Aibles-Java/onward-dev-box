@@ -52,6 +52,28 @@ Caveat: some `[ERR]` negative tests "pass" falsely — e.g. `[ERR] Admin invites
 OWNER → 403 ✓` is green only because `adminToken` is empty (403 = missing auth),
 coincidentally matching the expected code.
 
+## PR #39 review follow-up (2026-07-14)
+
+- **Two-terminal documented (fixed).** Reviewer flagged that `make run` foregrounds
+  `./mvnw spring-boot:run` and blocks, so `make smoke` needs a *second* terminal —
+  nowhere spelled out. Added the explicit `terminal 1: make run` / `terminal 2: make
+  smoke` sequence to the Makefile `run`/`smoke` help + comment block and the
+  `smoke-test.sh` header. Docs-only.
+- **Known-red "silent" claim (rejected, not fixed).** Reviewer called the red path
+  "silent" (only the success line prints). It is not: newman prints a full failure
+  report (124 assertions / 15 failed on a clean DB, 18 numbered failure entries).
+  newman is a stateless action-executor+reporter — no DB access — so it *cannot*
+  distinguish a known upstream bug from a real regression; a hardcoded
+  `EXPECTED_FAILURES`/label would go stale the moment feature_flag#52 is fixed (run
+  passes → hardcoded check falsely reports RED) and re-imports a cross-repo reference
+  this repo doesn't own. Left as-is; rebutted on the PR.
+- **Scoped db-reset (agreed problem, wrong home).** Reviewer wants a non-destructive
+  `make db-reset` instead of `make nuke` between runs. Real gap, but a fast reset
+  needs schema knowledge (which tables to TRUNCATE, which migration-history tables to
+  spare) — that knowledge belongs to feature_flag, which owns the schema and changes
+  it. Routed to feature_flag companion work (#18) rather than coupling dev-box to a
+  schema it doesn't own. `make nuke` stays as the zero-maintenance recovery.
+
 ## Status
 
 Script is **done and verified** (runs clean in 2s, correct baseUrl override,

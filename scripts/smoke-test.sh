@@ -16,6 +16,11 @@
 #   docker — dockerized `postman/newman` image (no local Node required)
 # auto prefers node (no image pull) and falls back to docker.
 #
+# Needs a running app: `make run` foregrounds feature_flag and holds its terminal,
+# so start it in one terminal and run the smoke test from a second:
+#   terminal 1:  make run
+#   terminal 2:  make smoke        # or: scripts/smoke-test.sh
+#
 # Usage:
 #   scripts/smoke-test.sh                 # against http://localhost:8081
 #   SMOKE_RUNNER=docker scripts/smoke-test.sh

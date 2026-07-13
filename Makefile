@@ -59,7 +59,7 @@ logs: ## Tail logs of all running services
 db: ## psql shell into feature_flag_db (cross-repo contract credentials)
 	$(COMPOSE) $(CORE) exec postgres psql -U ff_user -d feature_flag_db
 
-run: ## Run feature_flag on the host against this infra (override path with FF_DIR=…)
+run: ## Run feature_flag on the host (foreground — blocks this terminal; run `make smoke` in a second one)
 	@if [ ! -x "$(FF_DIR)/mvnw" ]; then \
 		echo "error: no feature_flag checkout at '$(FF_DIR)' (expected an executable mvnw there)"; \
 		echo "  clone it as a sibling:  git clone https://github.com/Aibles-Java/feature_flag.git $(FF_DIR)"; \
@@ -69,7 +69,10 @@ run: ## Run feature_flag on the host against this infra (override path with FF_D
 	$(COMPOSE) $(CORE) up -d --wait
 	cd "$(FF_DIR)" && ./mvnw spring-boot:run
 
-smoke: ## Run feature_flag's Postman collection end-to-end via newman (needs a running, fresh app)
+# `make run` foregrounds the app and holds its terminal, so smoke needs a second one:
+#   terminal 1:  make run      # boots the DB + app, then blocks
+#   terminal 2:  make smoke    # runs the collection against the running app
+smoke: ## Run feature_flag's Postman collection via newman (needs `make run` live in another terminal)
 	@scripts/smoke-test.sh
 
 sonar: ## Run local SonarQube analysis of feature_flag and print the quality-gate verdict

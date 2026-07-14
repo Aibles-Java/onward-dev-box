@@ -29,9 +29,11 @@
 # Overridable via env: FF_DIR, SMOKE_APP_URL, SMOKE_WAIT, SMOKE_RUNNER.
 #
 # Fresh-DB expectation: the collection registers fixed demo users and expects the
-# first registration to return 201, so it needs a clean instance. Re-running
-# against a dirty DB fails at auth with 409 — reset with 'make nuke && make run'
-# before re-smoking.
+# first registration to return 201, so it needs a clean instance; a dirty DB fails
+# at auth with 409. This script does NOT reset the DB — it only runs the collection.
+# Prefer `make smoke`, which truncates first (via `make db-reset`) so every run is
+# repeatable. Running this script directly assumes you've arranged a clean DB
+# yourself (`make db-reset`, or a fresh `make nuke && make run`).
 set -euo pipefail
 
 FF_DIR="${FF_DIR:-../feature_flag}"

@@ -15,7 +15,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db run smoke doctor sonar
+.PHONY: help init up up-all down nuke logs db db-reset run smoke doctor sonar
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -70,10 +70,37 @@ run: ## Run feature_flag on the host (foreground — blocks this terminal; run `
 	cd "$(FF_DIR)" && ./mvnw spring-boot:run
 
 # `make run` foregrounds the app and holds its terminal, so smoke needs a second one:
-#   terminal 1:  make run      # boots the DB + app, then blocks
-#   terminal 2:  make smoke    # runs the collection against the running app
-smoke: ## Run feature_flag's Postman collection via newman (needs `make run` live in another terminal)
+#   terminal 1:  make run     # boots the DB + app, then blocks
+#   terminal 2:  make smoke   # resets the DB, then runs the collection — repeatable
+#
+# smoke resets first so every run starts from a known-clean DB: the collection
+# registers fixed demo users and expects 201, so leftover state from a prior run
+# fails auth with 409 and the result stops being trustworthy. Resetting makes the
+# outcome deterministic (the only failures left are real, upstream ones). Skip the
+# reset to run against the current DB state with SMOKE_NO_RESET=1.
+smoke: ## Reset the DB, then run feature_flag's collection (repeatable; needs `make run` live in another terminal)
+	@if [ "$${SMOKE_NO_RESET:-0}" = 1 ]; then \
+		echo "smoke: SMOKE_NO_RESET=1 — running against current DB state (no reset)"; \
+	else \
+		$(MAKE) --no-print-directory db-reset; \
+	fi
 	@scripts/smoke-test.sh
+
+# Truncates the business tables in place — app stays up, SonarQube untouched — so
+# `make smoke` can start from a clean DB without a `make nuke` full-environment wipe.
+# `make smoke` calls this automatically; it's also here to run on its own. The reset
+# SQL is owned by feature_flag (it owns the schema + Liquibase history it must spare);
+# we only pipe it into our container.
+db-reset: ## Truncate feature_flag_db to a clean slate (keeps the app up; no volume wipe)
+	@sql="$(FF_DIR)/scripts/db-reset.sql"; \
+	if [ ! -f "$$sql" ]; then \
+		echo "error: reset SQL not found at '$$sql'"; \
+		echo "  it's owned by feature_flag — clone it as a sibling, or point at it:"; \
+		echo "    make db-reset FF_DIR=/path/to/feature_flag"; \
+		exit 1; \
+	fi; \
+	$(COMPOSE) $(CORE) exec -T postgres psql -v ON_ERROR_STOP=1 -q -U ff_user -d feature_flag_db < "$$sql" \
+		&& echo "db-reset: feature_flag_db truncated — 'make smoke' can re-run from a clean slate"
 
 sonar: ## Run local SonarQube analysis of feature_flag and print the quality-gate verdict
 	@if [ ! -x "$(FF_DIR)/mvnw" ]; then \

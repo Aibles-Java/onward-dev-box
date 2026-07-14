@@ -67,12 +67,28 @@ coincidentally matching the expected code.
   `EXPECTED_FAILURES`/label would go stale the moment feature_flag#52 is fixed (run
   passes → hardcoded check falsely reports RED) and re-imports a cross-repo reference
   this repo doesn't own. Left as-is; rebutted on the PR.
-- **Scoped db-reset (agreed problem, wrong home).** Reviewer wants a non-destructive
-  `make db-reset` instead of `make nuke` between runs. Real gap, but a fast reset
-  needs schema knowledge (which tables to TRUNCATE, which migration-history tables to
-  spare) — that knowledge belongs to feature_flag, which owns the schema and changes
-  it. Routed to feature_flag companion work (#18) rather than coupling dev-box to a
-  schema it doesn't own. `make nuke` stays as the zero-maintenance recovery.
+- **Scoped db-reset (agreed problem, built across both repos).** Reviewer wanted a
+  non-destructive `make db-reset` instead of `make nuke` between runs. Real gap, but
+  a fast reset needs schema knowledge (which tables to TRUNCATE, which
+  migration-history tables to spare) — that knowledge is feature_flag's. Split by
+  ownership: **feature_flag PR #55** owns the truncation SQL/script
+  (`scripts/db-reset.{sql,sh}` — TRUNCATE every `public` table except Liquibase
+  history `databasechangelog`/`databasechangeloglock`, discovered from `pg_tables`);
+  **dev-box** owns execution — `make db-reset` pipes that SQL into the compose
+  Postgres container, and `make smoke` now runs it first (opt out: `SMOKE_NO_RESET=1`)
+  so runs start known-clean. `smoke-test.sh` stays a pure runner (no reset).
+  `make nuke` stays as the zero-maintenance full recovery.
+
+- **Empirical finding: db-reset is necessary but NOT sufficient for a deterministic
+  smoke.** Two back-to-back `make smoke` runs (both reset the DB) gave 15/124 then
+  97/109 failures. Cause is NOT the DB (reset works) — it's feature_flag's **in-memory,
+  time-windowed rate limiter** on `/auth/register` + `/auth/login`: run 1 had 0×
+  `429`, run 2 had 6× `429` (quota exhausted across the two rapid runs). TRUNCATE
+  can't reset app-side state. So there are two non-determinism sources and **both are
+  feature_flag-owned**: DB seed collision (dev-box can reset via FF's SQL) and the
+  rate limiter (dev-box cannot touch — needs an FF dev/test profile). Decision: leave
+  the rate limiter to feature_flag; dev-box's reset still earns its keep by removing
+  the DB-state variable.
 
 ## Status
 

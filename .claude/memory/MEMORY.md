@@ -5,6 +5,7 @@ Updated by `/save-memory`. See `README.md` for how this system works.*
 
 <!-- Format: - [Title](path) — one-line hook. Newest relevant entries near the top. -->
 
+- [seed-feature-flag.sh via Admin API](decisions/0016-seed-feature-flag-script.md) — issue #14: `make seed` seeds demo data through feature_flag's live Admin API (not raw SQL — schema is app/Liquibase-owned); NOT idempotent (SDK key returned once) → "already seeded" guard; bash-3.2/subshell-globals gotchas; added curl+jq doctor check
 - [issue #13 Phase 2 verification closed](decisions/0015-issue-13-phase2-verification.md) — re-verified live, added missing SonarQube Community limitation note to INFRASTRUCTURE.md (wasn't actually documented despite prior HANDOFF claim), checked off §6 DoD line
 - [make sonar target](decisions/0014-make-sonar-target.md) — issue #12/#13: `sonar.qualitygate.wait=true` added on top of issue's literal command (bare call doesn't print/block on the gate verdict); verified end-to-end incl. both FF_DIR/SONAR_TOKEN error guards
 - [quality-gate.json](decisions/0013-quality-gate-json.md) — issue #11: checked-in DEV/SIT-shared gate JSON; SonarQube auto-adds "Clean as You Code" conditions to new gates, so bootstrap.sh prunes anything not in the file; assigned per-project, never set as instance default

@@ -15,7 +15,7 @@ ALL      = --profile core --profile quality --profile tools
 
 .DEFAULT_GOAL := help
 
-.PHONY: help init up up-all down nuke logs db db-reset run smoke doctor sonar
+.PHONY: help init up up-all down nuke logs db db-reset run seed smoke doctor sonar
 
 help: ## List available targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -68,6 +68,9 @@ run: ## Run feature_flag on the host (foreground — blocks this terminal; run `
 	fi
 	$(COMPOSE) $(CORE) up -d --wait
 	cd "$(FF_DIR)" && ./mvnw spring-boot:run
+
+seed: ## Seed demo data (org/project/env/flags) into a running feature_flag via its Admin API
+	@scripts/seed-feature-flag.sh
 
 # `make run` foregrounds the app and holds its terminal, so smoke needs a second one:
 #   terminal 1:  make run     # boots the DB + app, then blocks

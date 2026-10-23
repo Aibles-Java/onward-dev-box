@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cây Roadmap Devbox</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cây dọc — gốc ở trên, 3 nhánh, lá mở rộng thành khái niệm + task có giờ */
+:root{
+  --bg:#f6f7f8; --surface:#ffffff; --fg:#1b2127; --muted:#5d6872; --line:#d5dbe0;
+  --infra:#0f7a6c; --infra-soft:#e2f3f0; --tool:#5a4bc4; --tool-soft:#ecebfb; --ops:#5f6770; --ops-soft:#eceef0;
+  --done:#2f8a3e;
+  --f-body:"Be Vietnam Pro",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161a; --surface:#1a2026; --fg:#e4e8ec; --muted:#97a2ad; --line:#2e363e;
+  --infra:#4fc2b0; --infra-soft:#173430; --tool:#a69cf2; --tool-soft:#26233f; --ops:#a5adb5; --ops-soft:#252b31; --done:#6cc47a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161a; --surface:#1a2026; --fg:#e4e8ec; --muted:#97a2ad; --line:#2e363e;
+  --infra:#4fc2b0; --infra-soft:#173430; --tool:#a69cf2; --tool-soft:#26233f; --ops:#a5adb5; --ops-soft:#252b31; --done:#6cc47a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:26px;font-weight:600;margin:0;text-wrap:balance}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.sum{display:flex;flex-wrap:wrap;gap:8px 20px;margin:10px 0 14px;color:var(--muted)}
+.sum b{color:var(--fg);font-weight:500}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--done);width:0;transition:width .3s}
+.root{margin-top:26px;display:inline-flex;gap:10px;align-items:center;font-weight:600;font-size:17px}
+.root .mono{font-size:13px;font-weight:400;color:var(--muted)}
+.branch{margin-left:10px;border-left:1.5px solid var(--line);padding:18px 0 0 22px;position:relative}
+.branch:last-child{padding-bottom:4px}
+.bhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;position:relative}
+.bhead::before{content:"";position:absolute;left:-23px;top:12px;width:16px;border-top:1.5px solid var(--line)}
+.bhead h2{margin:0;font-size:17px;font-weight:600;color:var(--c)}
+.bhead .mono{font-size:13px;color:var(--muted)}
+.leaves{list-style:none;margin:10px 0 0;padding:0 0 0 14px;border-left:1.5px solid var(--line);display:grid;gap:8px}
+.leaf{position:relative}
+.leaf::before{content:"";position:absolute;left:-15px;top:20px;width:12px;border-top:1.5px solid var(--line)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+details[open]{border-color:var(--c)}
+summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:10px 14px}
+summary::-webkit-details-marker{display:none}
+summary:focus-visible{outline:2px solid var(--c);outline-offset:2px;border-radius:8px}
+.lname{font-weight:500;display:flex;gap:8px;align-items:center;min-width:0}
+.lname::before{content:"▸";color:var(--c);font-size:12px;transition:transform .15s}
+details[open] .lname::before{transform:rotate(90deg)}
+.lh{font-size:13px;color:var(--muted);text-align:right}
+.lh b{color:var(--fg);font-weight:500}
+.mini{grid-column:1/-1;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.mini i{display:block;height:100%;background:var(--done);width:0}
+.body{padding:2px 14px 14px;display:grid;gap:14px;min-width:0}
+.lbl{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:6px}
+.concepts{display:grid;gap:6px}
+.concept{display:grid;grid-template-columns:minmax(110px,170px) 1fr;gap:10px;font-size:14px}
+.concept dt{font-family:var(--f-mono);font-size:13px;color:var(--c);background:var(--soft);padding:1px 7px;border-radius:4px;align-self:start;justify-self:start}
+.concept dd{margin:0;color:var(--fg)}
+.tasks{display:grid;gap:2px}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.task:last-child{border-bottom:0}
+.task input{margin-top:4px;accent-color:var(--done)}
+.task.done span{color:var(--muted);text-decoration:line-through}
+.task .h{font-size:13px;color:var(--muted)}
+.dod{font-size:14px;background:var(--soft);border-radius:6px;padding:8px 12px}
+.dod b{font-weight:500;color:var(--c)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+button{font:inherit;font-size:13px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible{outline:2px solid var(--tool);outline-offset:2px}
+.infra{--c:var(--infra);--soft:var(--infra-soft)}
+.tool{--c:var(--tool);--soft:var(--tool-soft)}
+.ops{--c:var(--ops);--soft:var(--ops-soft)}
+@media (max-width:520px){.concept{grid-template-columns:1fr;gap:2px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Cây Roadmap Devbox</h1>
+  <div class="sum">
+    <span>Tổng <b class="mono" id="tH">0h</b></span>
+    <span><b class="mono" id="tD">0</b> ngày công</span>
+    <span>≈ <b class="mono">7</b> tuần · 1 người · +2 ngày dự phòng</span>
+    <span>Đã xong <b class="mono" id="dH">0h</b> (<span class="mono" id="dP">0%</span>)</span>
+  </div>
+  <div class="bar"><i id="pBar"></i></div>
+  <div class="tools">
+    <button type="button" id="openAll">Mở tất cả</button>
+    <button type="button" id="closeAll">Thu gọn</button>
+    <button type="button" id="resetAll">Bỏ tick toàn bộ</button>
+  </div>
+  <div class="root">Devbox local <span class="mono">8h = 1 ngày công</span></div>
+  <div id="tree"></div>
+</div>
+
+<script>
+const DATA=[
+{key:"infra",name:"Hạ tầng",items:[
+ {id:"base",name:"Nền tảng (Compose)",concepts:[
+  ["Docker Compose","Khai báo toàn bộ service, network, volume trong file YAML"],
+  ["Profiles","Nhóm service để bật theo nhu cầu: core, kafka, vault…"],
+  ["Named volume","Nơi giữ dữ liệu khi container bị xóa và tạo lại"],
+  ["Healthcheck","Lệnh kiểm tra service đã sẵn sàng thật, không chỉ đang chạy"],
+  [".env override","Cấu hình mặc định + file local riêng từng máy, không commit"]],
+  tasks:[["Cấu trúc repo, quy ước đặt tên service/network/volume",2],["docker-compose khung: network chung, named volume, pin version image",3],["Tách compose theo stack (include) + profiles core/mongo/kafka/vault/all",4],[".env.example + override bằng .env.local",3],["Healthcheck từng service + depends_on service_healthy",4],["Giới hạn RAM/CPU, chạy thử máy 8GB và 16GB",2],["Makefile tạm up/down/reset/logs",2],["Thư mục init/ + script chờ healthy rồi chạy init",2],["Test Linux, macOS Intel, Apple Silicon (arm64)",2]],
+  dod:"Profile core healthy dưới 2 phút; đổi port không cần sửa compose."},
+ {id:"pg",name:"PostgreSQL",concepts:[
+  ["Schema per service","Một database chung, mỗi service một schema riêng (order, payment…)"],
+  ["Least privilege","User của service chỉ có quyền trên schema của nó"],
+  ["search_path","Đặt schema mặc định cho user, code không cần ghi tiền tố schema"],
+  ["Migration (Flyway)","Mỗi service tự migrate schema của mình, có bảng lịch sử riêng"],
+  ["Seed data","Dữ liệu mẫu để test tay, nạp lại được bất cứ lúc nào"]],
+  tasks:[["Image + config (max_connections, log query chậm)",2],["Init script tạo schema + user theo service, đặt search_path, thu quyền schema public",3],["Convention Flyway theo schema (flyway.schemas) + migration mẫu",3],["Seed data + lệnh devbox seed",3],["Healthcheck pg_isready + Adminer",2],["Snapshot/restore và reset theo từng schema (pg_dump -n)",3]],
+  dod:"Service chỉ thấy schema của mình, migration tự chạy, reset 1 schema không ảnh hưởng schema khác."},
+ {id:"redis",name:"Redis",concepts:[
+  ["Cache-aside","App đọc cache trước, miss thì đọc DB rồi ghi lại cache"],
+  ["TTL","Thời gian sống của key, hết hạn tự xóa"],
+  ["Eviction policy","Cách Redis xóa key khi đầy bộ nhớ (allkeys-lru…)"],
+  ["Key prefix","Mỗi service một tiền tố, tránh đè key của nhau"]],
+  tasks:[["Image + redis.conf: maxmemory, eviction, AOF",2],["Quy ước prefix + ACL user theo service",2],["RedisInsight",1],["Healthcheck + xóa key theo service khi reset",2],["Ví dụ cache-aside trong template",1]],
+  dod:"Mỗi service chỉ đọc/ghi được key của mình; reset không ảnh hưởng service khác."},
+ {id:"mongo",name:"MongoDB",concepts:[
+  ["Replica set","Bắt buộc để dùng transaction và change stream, kể cả khi chỉ 1 node"],
+  ["Keyfile","File khóa để bật auth khi chạy replica set"],
+  ["Change stream","Nghe thay đổi dữ liệu theo thời gian thực"],
+  ["Index","Tạo sẵn qua init script, không để app tự tạo"]],
+  tasks:[["Single-node replica set + keyfile + auth",4],["init.js tạo DB, user, index theo service",3],["Healthcheck bằng rs.status()",2],["mongo-express hoặc hướng dẫn Compass",1],["Seed + reset theo service",3],["Test transaction + change stream",3]],
+  dod:"Transaction chạy được; restart container không mất cấu hình replica set."},
+ {id:"kafka",name:"Kafka",concepts:[
+  ["KRaft","Kafka tự quản metadata, không cần Zookeeper"],
+  ["Listener","Địa chỉ cho container (kafka:9092) khác địa chỉ cho máy host (localhost:29092)"],
+  ["Topic / partition","Kênh message và số phần chia để xử lý song song"],
+  ["Consumer group","Nhóm consumer chia nhau đọc partition"],
+  ["DLT","Topic chứa message xử lý lỗi sau khi retry hết"],
+  ["Schema Registry","Quản lý version schema Avro/Protobuf (tùy chọn)"]],
+  tasks:[["Broker KRaft + listener cho container và host",5],["Script tạo topic + convention tên <service>.<event>",4],["Kafka UI",2],["Healthcheck thật: produce và consume 1 message",3],["Convention retry topic + DLT",3],["Schema Registry (tùy chọn)",4],["Reset topic và consumer offset theo service",3]],
+  dod:"App trong container và app chạy từ IDE đều kết nối được; có DLT mẫu."},
+ {id:"vault",name:"Vault",concepts:[
+  ["Seal / unseal","Vault khởi động ở trạng thái khóa, phải unseal mới đọc được secret"],
+  ["Dev vs server mode","Dev mode mất dữ liệu khi restart; server mode giữ lại"],
+  ["KV v2","Kho secret dạng key-value, có lưu version"],
+  ["Policy","Quy định service nào được đọc path nào"],
+  ["AppRole","Cách service tự đăng nhập Vault bằng role_id + secret_id"],
+  ["Dynamic secret","Vault tự tạo user DB tạm thời, hết hạn tự thu hồi"],
+  ["Lease / TTL","Thời hạn của secret động"]],
+  tasks:[["Server mode, lưu bằng file storage",4],["Script init + tự unseal cho local",4],["Bật KV v2 + convention path secret/<service>",3],["Policy cho từng service",4],["AppRole cho service",4],["Database secrets engine cho Postgres",6],["Dynamic credentials cho Mongo",4],["Mẫu Spring Cloud Vault",3]],
+  dod:"Không còn secret trong .env của app; restart máy không mất secret."}
+]},
+{key:"tool",name:"Công cụ platform",items:[
+ {id:"cli",name:"CLI devbox",concepts:[
+  ["Self-service","Dev tự làm được việc hạ tầng mà không cần nhờ ai"],
+  ["Idempotent","Chạy lệnh nhiều lần cho kết quả như nhau, không gây lỗi"],
+  ["Exit code","Mã trả về chuẩn để CI biết lệnh thành công hay thất bại"],
+  ["Doctor","Lệnh tự chẩn đoán môi trường máy dev và gợi ý cách sửa"]],
+  tasks:[["Khung CLI (Go + Cobra), help, version",3],["devbox up --profile --with, chờ healthy",4],["devbox down / reset <svc> có hỏi xác nhận",3],["devbox logs -f + devbox status",3],["devbox doctor: Docker, RAM, port, disk, arch",5],["Output ✔/✖, exit code, --json",2],["Build binary đa nền tảng + script cài",2],["Test CLI: unit + chạy thật trong CI",2]],
+  dod:"Dev mới cài CLI, chạy doctor rồi up là xong, không cần đọc wiki."},
+ {id:"golden",name:"Golden path",concepts:[
+  ["Golden path","Con đường chuẩn được hỗ trợ sẵn để tạo service mới"],
+  ["Template","Bộ code khung có sẵn kết nối, cấu hình, test, CI"],
+  ["Scaffolder","Công cụ sinh code từ template: devbox new"],
+  ["Provisioning","Tự cấp DB, topic, secret cho service mới"],
+  ["Rollback","Bước nào lỗi thì dọn sạch những gì đã tạo"]],
+  tasks:[["Thiết kế cấu trúc service api/domain/infra + convention",3],["Template Spring Boot: config theo profile, Postgres/Mongo, Flyway",5],["Module bật/tắt: Kafka, Redis, Vault",6],["Actuator health, log JSON, Dockerfile",3],["Engine sinh code, thay placeholder",4],["Hỏi tương tác + flag chạy không cần hỏi",3],["Cấp hạ tầng: schema Postgres, topic, Vault policy, Redis prefix, registry",5],["git init, build, gọi /health; lỗi thì rollback",3]],
+  dod:"devbox new chạy dưới 2 phút, service sinh ra pass build, test, health."},
+ {id:"loop",name:"Dev loop",concepts:[
+  ["Inner loop","Vòng sửa code → chạy → kiểm tra trên máy mình, càng nhanh càng tốt"],
+  ["Hot reload","App tự nạp lại khi đổi code, không cần restart"],
+  ["Mock vs real","Mặc định mock service khác; khi cần thì chạy bản thật từ image"],
+  ["Remote debug","Gắn debugger từ IDE vào app đang chạy trong container"]],
+  tasks:[["devbox run <svc> có hot reload",5],["devbox seed / reset <svc>",4],["--with <svc>: chạy service khác từ Docker image",5],["WireMock mặc định + stub mẫu",4],["devbox status kèm link các UI và port",2],["Remote debug port + cấu hình IDE mẫu",4]],
+  dod:"Sửa code thấy kết quả dưới 10 giây; test được với service khác không cần clone."},
+ {id:"test",name:"Test kit",concepts:[
+  ["Test pyramid","Nhiều unit test, ít integration test, rất ít E2E"],
+  ["Testcontainers","Thư viện bật container thật trong lúc chạy test"],
+  ["Singleton container","Dùng chung 1 container cho cả bộ test để chạy nhanh"],
+  ["Test isolation","Mỗi test dọn dữ liệu của mình, không ảnh hưởng test khác"]],
+  tasks:[["Base class + singleton container",6],["Module cho từng stack: pg, mongo, redis, kafka, vault",8],["Dọn dữ liệu giữa các test",3],["Lệnh devbox test",2],["Publish lên internal repo + version",3],["Test cho chính thư viện",2]],
+  dod:"Integration test của 1 service chạy dưới 2 phút, chạy giống nhau trên máy dev và CI."},
+ {id:"smoke",name:"Smoke test",concepts:[
+  ["Smoke test","Kiểm tra nhanh hệ thống có sống không, dưới 1 phút"],
+  ["Liveness / readiness","Còn chạy không / sẵn sàng nhận request chưa"]],
+  tasks:[["devbox smoke: đọc ghi thật trên 5 stack",4],["Smoke test mẫu trong template service",2],["Output --json cho CI",2]],
+  dod:"Phân biệt được lỗi do hạ tầng hay do code trong 1 lệnh."}
+]},
+{key:"ops",name:"Vận hành",items:[
+ {id:"ci",name:"CI + release",concepts:[
+  ["Reusable workflow","Workflow CI viết 1 lần, mọi service gọi lại"],
+  ["Matrix build","Chạy cùng job trên nhiều OS"],
+  ["Semver","Version dạng MAJOR.MINOR.PATCH, biết khi nào có thay đổi phá vỡ"],
+  ["Changelog","Ghi lại thay đổi mỗi bản để dev biết cần làm gì khi nâng cấp"]],
+  tasks:[["CI cho devbox: matrix Linux/macOS",4],["Reusable workflow build/test/scan cho service",5],["Release binary CLI + changelog",4],["devbox update: nâng cấp an toàn",3]],
+  dod:"Mỗi thay đổi devbox đều được test tự động trước khi phát hành."},
+ {id:"docs",name:"Docs + metrics",concepts:[
+  ["Docs-as-code","Tài liệu nằm trong repo, review như code"],
+  ["ADR","Ghi lại lý do của các quyết định kiến trúc"],
+  ["Time-to-first-run","Thời gian từ lúc clone đến lúc chạy được"],
+  ["Success rate","Tỷ lệ lệnh devbox up chạy thành công"]],
+  tasks:[["README quick start + bảng port",3],["Troubleshooting theo lỗi thực tế",3],["ADR cho các quyết định chính",2],["CLI ghi thời gian và kết quả lệnh (opt-in)",4],["Onboarding thử với 1–2 dev, sửa lỗi",4]],
+  dod:"Dev mới chạy được trong dưới 10 phút; có số đo để cải thiện."}
+]}];
+
+const KEY="devbox-roadmap-done";
+let done={};try{done=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sumH=it=>it.tasks.reduce((a,t)=>a+t[1],0);
+const tree=document.getElementById("tree");
+tree.innerHTML=DATA.map(b=>{
+  const bh=b.items.reduce((a,it)=>a+sumH(it),0);
+  return `<section class="branch ${b.key}"><div class="bhead"><h2>${b.name}</h2><span class="mono">${bh}h · ${bh/8} ngày</span></div><ul class="leaves">`+
+  b.items.map(it=>{const h=sumH(it);return `<li class="leaf"><details id="${it.id}"><summary><span class="lname">${esc(it.name)}</span><span class="lh mono"><b data-dh="${it.id}">0</b>/${h}h · ${h/8}d</span><span class="mini"><i data-mini="${it.id}"></i></span></summary><div class="body">
+  <div><div class="lbl">Khái niệm cần nắm</div><dl class="concepts">${it.concepts.map(c=>`<div class="concept"><dt>${esc(c[0])}</dt><dd>${esc(c[1])}</dd></div>`).join("")}</dl></div>
+  <div><div class="lbl">Task cần setup</div><div class="tasks">${it.tasks.map((t,i)=>{const k=it.id+"-"+i;return `<label class="task${done[k]?" done":""}"><input type="checkbox" id="${k}" data-k="${k}" data-h="${t[1]}" data-it="${it.id}"${done[k]?" checked":""}><span>${esc(t[0])}</span><span class="h mono">${t[1]}h</span></label>`}).join("")}</div></div>
+  <div class="dod"><b>Done khi:</b> ${esc(it.dod)}</div></div></details></li>`}).join("")+`</ul></section>`;
+}).join("");
+
+function refresh(){
+  let total=0,dh=0;
+  DATA.forEach(b=>b.items.forEach(it=>{
+    const h=sumH(it);let d=0;
+    it.tasks.forEach((t,i)=>{if(done[it.id+"-"+i])d+=t[1]});
+    total+=h;dh+=d;
+    document.querySelector(`[data-dh="${it.id}"]`).textContent=d;
+    document.querySelector(`[data-mini="${it.id}"]`).style.width=(d/h*100)+"%";
+  }));
+  document.getElementById("tH").textContent=total+"h";
+  document.getElementById("tD").textContent=total/8;
+  document.getElementById("dH").textContent=dh+"h";
+  const p=Math.round(dh/total*100);
+  document.getElementById("dP").textContent=p+"%";
+  document.getElementById("pBar").style.width=p+"%";
+}
+tree.addEventListener("change",e=>{
+  const c=e.target;if(!c.dataset.k)return;
+  if(c.checked)done[c.dataset.k]=1;else delete done[c.dataset.k];
+  c.closest(".task").classList.toggle("done",c.checked);save();refresh();
+});
+document.getElementById("openAll").onclick=()=>tree.querySelectorAll("details").forEach(d=>d.open=true);
+document.getElementById("closeAll").onclick=()=>tree.querySelectorAll("details").forEach(d=>d.open=false);
+document.getElementById("resetAll").onclick=()=>{done={};save();tree.querySelectorAll("input[type=checkbox]").forEach(c=>{c.checked=false;c.closest(".task").classList.remove("done")});refresh()};
+refresh();
+</script>
+</body>
+</html>

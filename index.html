@@ -11,23 +11,24 @@
 :root{
   --bg:#f6f7f8; --surface:#ffffff; --fg:#1b2127; --muted:#5d6872; --line:#d5dbe0;
   --infra:#0f7a6c; --infra-soft:#e2f3f0; --tool:#5a4bc4; --tool-soft:#ecebfb; --ops:#5f6770; --ops-soft:#eceef0;
-  --done:#2f8a3e;
+  --done:#2f8a3e; --wip:#9a6a00; --wip-soft:#fbf1dc;
   --f-body:"Be Vietnam Pro",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#12161a; --surface:#1a2026; --fg:#e4e8ec; --muted:#97a2ad; --line:#2e363e;
-  --infra:#4fc2b0; --infra-soft:#173430; --tool:#a69cf2; --tool-soft:#26233f; --ops:#a5adb5; --ops-soft:#252b31; --done:#6cc47a; color-scheme:dark}}
+  --infra:#4fc2b0; --infra-soft:#173430; --tool:#a69cf2; --tool-soft:#26233f; --ops:#a5adb5; --ops-soft:#252b31; --done:#6cc47a; --wip:#dca93f; --wip-soft:#332a14; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12161a; --surface:#1a2026; --fg:#e4e8ec; --muted:#97a2ad; --line:#2e363e;
-  --infra:#4fc2b0; --infra-soft:#173430; --tool:#a69cf2; --tool-soft:#26233f; --ops:#a5adb5; --ops-soft:#252b31; --done:#6cc47a; color-scheme:dark}
+  --infra:#4fc2b0; --infra-soft:#173430; --tool:#a69cf2; --tool-soft:#26233f; --ops:#a5adb5; --ops-soft:#252b31; --done:#6cc47a; --wip:#dca93f; --wip-soft:#332a14; color-scheme:dark}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55}
 .wrap{max-width:860px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font-size:26px;font-weight:600;margin:0;text-wrap:balance}
 .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .sum{display:flex;flex-wrap:wrap;gap:8px 20px;margin:10px 0 14px;color:var(--muted)}
 .sum b{color:var(--fg);font-weight:500}
-.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--done);width:0;transition:width .3s}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;display:flex}
+.bar i{height:100%;background:var(--done);width:0;transition:width .3s}
+.bar i.w{background:var(--wip)}
 .root{margin-top:26px;display:inline-flex;gap:10px;align-items:center;font-weight:600;font-size:17px}
 .root .mono{font-size:13px;font-weight:400;color:var(--muted)}
 .branch{margin-left:10px;border-left:1.5px solid var(--line);padding:18px 0 0 22px;position:relative}
@@ -49,8 +50,9 @@ summary:focus-visible{outline:2px solid var(--c);outline-offset:2px;border-radiu
 details[open] .lname::before{transform:rotate(90deg)}
 .lh{font-size:13px;color:var(--muted);text-align:right}
 .lh b{color:var(--fg);font-weight:500}
-.mini{grid-column:1/-1;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
-.mini i{display:block;height:100%;background:var(--done);width:0}
+.mini{grid-column:1/-1;height:3px;background:var(--line);border-radius:2px;overflow:hidden;display:flex}
+.mini i{height:100%;background:var(--done);width:0}
+.mini i.w{background:var(--wip)}
 .body{padding:2px 14px 14px;display:grid;gap:14px;min-width:0}
 .lbl{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:6px}
 .concepts{display:grid;gap:6px}
@@ -58,14 +60,28 @@ details[open] .lname::before{transform:rotate(90deg)}
 .concept dt{font-family:var(--f-mono);font-size:13px;color:var(--c);background:var(--soft);padding:1px 7px;border-radius:4px;align-self:start;justify-self:start}
 .concept dd{margin:0;color:var(--fg)}
 .tasks{display:grid;gap:2px}
-.task{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:5px 0;border-bottom:1px dashed var(--line);font-size:14px;cursor:pointer}
 .task:last-child{border-bottom:0}
-.task input{margin-top:4px;accent-color:var(--done)}
-.task.done span{color:var(--muted);text-decoration:line-through}
 .task .h{font-size:13px;color:var(--muted)}
+/* 3 trạng thái: 0 chưa làm · 2 đang dở (gạch ngang, vàng) · 1 xong (dấu tích, xanh) */
+.box{width:15px;height:15px;margin-top:3px;padding:0;border:1.5px solid var(--line);border-radius:4px;background:var(--surface);display:grid;place-items:center;font-size:11px;line-height:1;color:#fff;flex:none}
+.task[data-s="1"] .box{background:var(--done);border-color:var(--done)}
+.task[data-s="1"] .box::before{content:"✓"}
+.task[data-s="2"] .box{background:var(--wip);border-color:var(--wip)}
+.task[data-s="2"] .box::before{content:"–"}
+.task[data-s="1"] .t{color:var(--muted);text-decoration:line-through}
+.task[data-s="2"]{background:var(--wip-soft);border-radius:4px}
+.task[data-s="2"] .box{margin-left:4px}
+.task[data-s="2"] .h{margin-right:6px}
+.wtag{display:inline-block;font-style:normal;font-size:11.5px;color:var(--wip);border:1px solid var(--wip);border-radius:4px;padding:0 5px;margin-left:7px;vertical-align:1px;white-space:nowrap}
+.miss{display:inline-block;font-style:normal;font-size:13px;color:var(--muted);margin-top:2px}
+.miss b{font-weight:500}
 .dod{font-size:14px;background:var(--soft);border-radius:6px;padding:8px 12px}
 .dod b{font-weight:500;color:var(--c)}
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.note{margin:14px 0 0;font-size:13px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--muted);align-items:center}
+.legend .task{display:inline-grid;grid-template-columns:auto auto;gap:7px;padding:0;border:0;background:0;cursor:default}
 button{font:inherit;font-size:13px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 12px;cursor:pointer}
 button:hover{border-color:var(--muted)}
 button:focus-visible{outline:2px solid var(--tool);outline-offset:2px}
@@ -85,12 +101,19 @@ button:focus-visible{outline:2px solid var(--tool);outline-offset:2px}
     <span><b class="mono" id="tD">0</b> ngày công</span>
     <span>≈ <b class="mono">7</b> tuần · 1 người · +2 ngày dự phòng</span>
     <span>Đã xong <b class="mono" id="dH">0h</b> (<span class="mono" id="dP">0%</span>)</span>
+    <span>Đang dở <b class="mono" id="wH">0h</b></span>
   </div>
-  <div class="bar"><i id="pBar"></i></div>
+  <div class="bar"><i id="pBar"></i><i class="w" id="wBar"></i></div>
   <div class="tools">
     <button type="button" id="openAll">Mở tất cả</button>
     <button type="button" id="closeAll">Thu gọn</button>
     <button type="button" id="resetAll">Bỏ tick toàn bộ</button>
+  </div>
+  <p class="note">Trạng thái tick sẵn = rà soát repo <span class="mono">onward-dev-box</span> ngày 09/11/2026. Click vào task để đổi: chưa làm → đang dở → xong. Thay đổi của bạn được lưu trong trình duyệt.</p>
+  <div class="legend">
+    <span class="task" data-s="0"><span class="box"></span><span>chưa làm</span></span>
+    <span class="task" data-s="2"><span class="box"></span><span>đang dở — có ghi chú còn thiếu gì</span></span>
+    <span class="task" data-s="1"><span class="box"></span><span>xong</span></span>
   </div>
   <div class="root">Devbox local <span class="mono">8h = 1 ngày công</span></div>
   <div id="tree"></div>
@@ -105,7 +128,7 @@ const DATA=[
   ["Named volume","Nơi giữ dữ liệu khi container bị xóa và tạo lại"],
   ["Healthcheck","Lệnh kiểm tra service đã sẵn sàng thật, không chỉ đang chạy"],
   [".env override","Cấu hình mặc định + file local riêng từng máy, không commit"]],
-  tasks:[["Cấu trúc repo, quy ước đặt tên service/network/volume",2],["docker-compose khung: network chung, named volume, pin version image",3],["Tách compose theo stack (include) + profiles core/mongo/kafka/vault/all",4],[".env.example + override bằng .env.local",3],["Healthcheck từng service + depends_on service_healthy",4],["Giới hạn RAM/CPU, chạy thử máy 8GB và 16GB",2],["Makefile tạm up/down/reset/logs",2],["Thư mục init/ + script chờ healthy rồi chạy init",2],["Test Linux, macOS Intel, Apple Silicon (arm64)",2]],
+  tasks:[["Cấu trúc repo, quy ước đặt tên service/network/volume",2,1],["docker-compose khung: network chung, named volume, pin version image",3,1],["Tách compose theo stack (include) + profiles core/mongo/kafka/vault/all",4,2,"Có profiles core/quality/tools; chưa tách file bằng include:, chưa có stack mongo/kafka/vault."],[".env.example + override bằng .env.local",3,1],["Healthcheck từng service + depends_on service_healthy",4,1],["Giới hạn RAM/CPU, chạy thử máy 8GB và 16GB",2],["Makefile tạm up/down/reset/logs",2,1],["Thư mục init/ + script chờ healthy rồi chạy init",2,1],["Test Linux, macOS Intel, Apple Silicon (arm64)",2]],
   dod:"Profile core healthy dưới 2 phút; đổi port không cần sửa compose."},
  {id:"pg",name:"PostgreSQL",concepts:[
   ["Schema per service","Một database chung, mỗi service một schema riêng (order, payment…)"],
@@ -113,7 +136,7 @@ const DATA=[
   ["search_path","Đặt schema mặc định cho user, code không cần ghi tiền tố schema"],
   ["Migration (Flyway)","Mỗi service tự migrate schema của mình, có bảng lịch sử riêng"],
   ["Seed data","Dữ liệu mẫu để test tay, nạp lại được bất cứ lúc nào"]],
-  tasks:[["Image + config (max_connections, log query chậm)",2],["Init script tạo schema + user theo service, đặt search_path, thu quyền schema public",3],["Convention Flyway theo schema (flyway.schemas) + migration mẫu",3],["Seed data + lệnh devbox seed",3],["Healthcheck pg_isready + Adminer",2],["Snapshot/restore và reset theo từng schema (pg_dump -n)",3]],
+  tasks:[["Image + config (max_connections, log query chậm)",2,2,"Có postgres:16-alpine + healthcheck; compose chưa có command:/postgresql.conf nên chưa tune max_connections, chưa log query chậm."],["Init script tạo schema + user theo service, đặt search_path, thu quyền schema public",3,2,"postgres/init/ đang làm database-per-service (feature_flag_db, sonar) + owner user, idempotent; chưa làm schema-per-service + search_path + thu quyền public."],["Convention Flyway theo schema (flyway.schemas) + migration mẫu",3],["Seed data + lệnh devbox seed",3,1],["Healthcheck pg_isready + Adminer",2,1],["Snapshot/restore và reset theo từng schema (pg_dump -n)",3,2,"Có make db-reset (truncate in-place, app vẫn chạy); chưa có snapshot/restore bằng pg_dump -n."]],
   dod:"Service chỉ thấy schema của mình, migration tự chạy, reset 1 schema không ảnh hưởng schema khác."},
  {id:"redis",name:"Redis",concepts:[
   ["Cache-aside","App đọc cache trước, miss thì đọc DB rồi ghi lại cache"],
@@ -155,7 +178,7 @@ const DATA=[
   ["Idempotent","Chạy lệnh nhiều lần cho kết quả như nhau, không gây lỗi"],
   ["Exit code","Mã trả về chuẩn để CI biết lệnh thành công hay thất bại"],
   ["Doctor","Lệnh tự chẩn đoán môi trường máy dev và gợi ý cách sửa"]],
-  tasks:[["Khung CLI (Go + Cobra), help, version",3],["devbox up --profile --with, chờ healthy",4],["devbox down / reset <svc> có hỏi xác nhận",3],["devbox logs -f + devbox status",3],["devbox doctor: Docker, RAM, port, disk, arch",5],["Output ✔/✖, exit code, --json",2],["Build binary đa nền tảng + script cài",2],["Test CLI: unit + chạy thật trong CI",2]],
+  tasks:[["Khung CLI (Go + Cobra), help, version",3],["devbox up --profile --with, chờ healthy",4],["devbox down / reset <svc> có hỏi xác nhận",3],["devbox logs -f + devbox status",3],["devbox doctor: Docker, RAM, port, disk, arch",5,2,"scripts/doctor.sh check Docker + Compose v2, Java 21, 4 port, RAM Docker, vm.max_map_count, curl/jq — mỗi FAIL in 1 dòng fix:. Còn thiếu check disk + arch, và chưa phải CLI Go."],["Output ✔/✖, exit code, --json",2],["Build binary đa nền tảng + script cài",2],["Test CLI: unit + chạy thật trong CI",2]],
   dod:"Dev mới cài CLI, chạy doctor rồi up là xong, không cần đọc wiki."},
  {id:"golden",name:"Golden path",concepts:[
   ["Golden path","Con đường chuẩn được hỗ trợ sẵn để tạo service mới"],
@@ -170,7 +193,7 @@ const DATA=[
   ["Hot reload","App tự nạp lại khi đổi code, không cần restart"],
   ["Mock vs real","Mặc định mock service khác; khi cần thì chạy bản thật từ image"],
   ["Remote debug","Gắn debugger từ IDE vào app đang chạy trong container"]],
-  tasks:[["devbox run <svc> có hot reload",5],["devbox seed / reset <svc>",4],["--with <svc>: chạy service khác từ Docker image",5],["WireMock mặc định + stub mẫu",4],["devbox status kèm link các UI và port",2],["Remote debug port + cấu hình IDE mẫu",4]],
+  tasks:[["devbox run <svc> có hot reload",5,2,"make run chạy feature_flag trên host sau khi chờ DB healthy; chưa đảm bảo hot reload, chưa có --with <svc>."],["devbox seed / reset <svc>",4,1],["--with <svc>: chạy service khác từ Docker image",5],["WireMock mặc định + stub mẫu",4],["devbox status kèm link các UI và port",2],["Remote debug port + cấu hình IDE mẫu",4]],
   dod:"Sửa code thấy kết quả dưới 10 giây; test được với service khác không cần clone."},
  {id:"test",name:"Test kit",concepts:[
   ["Test pyramid","Nhiều unit test, ít integration test, rất ít E2E"],
@@ -182,7 +205,7 @@ const DATA=[
  {id:"smoke",name:"Smoke test",concepts:[
   ["Smoke test","Kiểm tra nhanh hệ thống có sống không, dưới 1 phút"],
   ["Liveness / readiness","Còn chạy không / sẵn sàng nhận request chưa"]],
-  tasks:[["devbox smoke: đọc ghi thật trên 5 stack",4],["Smoke test mẫu trong template service",2],["Output --json cho CI",2]],
+  tasks:[["devbox smoke: đọc ghi thật trên 5 stack",4,2,"scripts/smoke-test.sh (newman) xong + đã verify, nhưng known-red: 15/124 assertion fail do 2 lỗi thuộc feature_flag. Mới phủ 1 stack (Postgres qua Admin API)."],["Smoke test mẫu trong template service",2],["Output --json cho CI",2]],
   dod:"Phân biệt được lỗi do hạ tầng hay do code trong 1 lệnh."}
 ]},
 {key:"ops",name:"Vận hành",items:[
@@ -191,19 +214,32 @@ const DATA=[
   ["Matrix build","Chạy cùng job trên nhiều OS"],
   ["Semver","Version dạng MAJOR.MINOR.PATCH, biết khi nào có thay đổi phá vỡ"],
   ["Changelog","Ghi lại thay đổi mỗi bản để dev biết cần làm gì khi nâng cấp"]],
-  tasks:[["CI cho devbox: matrix Linux/macOS",4],["Reusable workflow build/test/scan cho service",5],["Release binary CLI + changelog",4],["devbox update: nâng cấp an toàn",3]],
+  tasks:[["CI cho devbox: matrix Linux/macOS",4,2,"validate.yml: compose config -q + shellcheck + boot profile core và assert Postgres healthy; chỉ chạy ubuntu-latest, chưa có matrix macOS."],["Reusable workflow build/test/scan cho service",5],["Release binary CLI + changelog",4],["devbox update: nâng cấp an toàn",3]],
   dod:"Mỗi thay đổi devbox đều được test tự động trước khi phát hành."},
  {id:"docs",name:"Docs + metrics",concepts:[
   ["Docs-as-code","Tài liệu nằm trong repo, review như code"],
   ["ADR","Ghi lại lý do của các quyết định kiến trúc"],
   ["Time-to-first-run","Thời gian từ lúc clone đến lúc chạy được"],
   ["Success rate","Tỷ lệ lệnh devbox up chạy thành công"]],
-  tasks:[["README quick start + bảng port",3],["Troubleshooting theo lỗi thực tế",3],["ADR cho các quyết định chính",2],["CLI ghi thời gian và kết quả lệnh (opt-in)",4],["Onboarding thử với 1–2 dev, sửa lỗi",4]],
+  tasks:[["README quick start + bảng port",3,1],["Troubleshooting theo lỗi thực tế",3,1],["ADR cho các quyết định chính",2,1],["CLI ghi thời gian và kết quả lệnh (opt-in)",4],["Onboarding thử với 1–2 dev, sửa lỗi",4]],
   dod:"Dev mới chạy được trong dưới 10 phút; có số đo để cải thiện."}
 ]}];
 
-const KEY="devbox-roadmap-done";
-let done={};try{done=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+// Mỗi task: [tên, giờ, trạng thái?, còn thiếu gì?]
+//   trạng thái 1 = xong · 2 = đang dở (kèm ghi chú ở phần tử 4) · không có = chưa làm
+// Trạng thái trong DATA là ảnh chụp repo, nạp 1 lần duy nhất làm mốc khởi đầu; sau đó
+// localStorage là nguồn sự thật nên thay đổi của người dùng không bị ghi đè khi mở lại.
+const KEY="devbox-roadmap-done",SEED="devbox-roadmap-seed-2";
+const ARIA={0:"false",1:"true",2:"mixed"},NEXT={0:2,2:1,1:0};
+const baseline=()=>{const o={};DATA.forEach(b=>b.items.forEach(it=>it.tasks.forEach((t,i)=>{if(t[2])o[it.id+"-"+i]=t[2]})));return o};
+let done={};
+try{
+  done=JSON.parse(localStorage.getItem(KEY)||"{}");
+  if(!localStorage.getItem(SEED)){
+    done=Object.assign(done,baseline());
+    localStorage.setItem(SEED,"1");localStorage.setItem(KEY,JSON.stringify(done));
+  }
+}catch(e){done=baseline()}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}};
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const sumH=it=>it.tasks.reduce((a,t)=>a+t[1],0);
@@ -211,36 +247,53 @@ const tree=document.getElementById("tree");
 tree.innerHTML=DATA.map(b=>{
   const bh=b.items.reduce((a,it)=>a+sumH(it),0);
   return `<section class="branch ${b.key}"><div class="bhead"><h2>${b.name}</h2><span class="mono">${bh}h · ${bh/8} ngày</span></div><ul class="leaves">`+
-  b.items.map(it=>{const h=sumH(it);return `<li class="leaf"><details id="${it.id}"><summary><span class="lname">${esc(it.name)}</span><span class="lh mono"><b data-dh="${it.id}">0</b>/${h}h · ${h/8}d</span><span class="mini"><i data-mini="${it.id}"></i></span></summary><div class="body">
+  b.items.map(it=>{const h=sumH(it);return `<li class="leaf"><details id="${it.id}"><summary><span class="lname">${esc(it.name)}</span><span class="lh mono"><b data-dh="${it.id}">0</b>/${h}h · ${h/8}d</span><span class="mini"><i data-mini="${it.id}"></i><i class="w" data-miniw="${it.id}"></i></span></summary><div class="body">
   <div><div class="lbl">Khái niệm cần nắm</div><dl class="concepts">${it.concepts.map(c=>`<div class="concept"><dt>${esc(c[0])}</dt><dd>${esc(c[1])}</dd></div>`).join("")}</dl></div>
-  <div><div class="lbl">Task cần setup</div><div class="tasks">${it.tasks.map((t,i)=>{const k=it.id+"-"+i;return `<label class="task${done[k]?" done":""}"><input type="checkbox" id="${k}" data-k="${k}" data-h="${t[1]}" data-it="${it.id}"${done[k]?" checked":""}><span>${esc(t[0])}</span><span class="h mono">${t[1]}h</span></label>`}).join("")}</div></div>
+  <div><div class="lbl">Task cần setup</div><div class="tasks">${it.tasks.map((t,i)=>{const k=it.id+"-"+i,st=done[k]||0;return `<div class="task" data-s="${st}" data-k="${k}" role="checkbox" tabindex="0" aria-checked="${ARIA[st]}" aria-label="${esc(t[0])}"><span class="box"></span><span class="t">${esc(t[0])}${st==2?'<em class="wtag">đang dở</em>':""}${t[3]?`<em class="miss"><b>Còn thiếu:</b> ${esc(t[3])}</em>`:""}</span><span class="h mono">${t[1]}h</span></div>`}).join("")}</div></div>
   <div class="dod"><b>Done khi:</b> ${esc(it.dod)}</div></div></details></li>`}).join("")+`</ul></section>`;
 }).join("");
 
 function refresh(){
-  let total=0,dh=0;
+  let total=0,dh=0,wh=0;
   DATA.forEach(b=>b.items.forEach(it=>{
-    const h=sumH(it);let d=0;
-    it.tasks.forEach((t,i)=>{if(done[it.id+"-"+i])d+=t[1]});
-    total+=h;dh+=d;
+    const h=sumH(it);let d=0,w=0;
+    it.tasks.forEach((t,i)=>{const st=done[it.id+"-"+i];if(st==1)d+=t[1];else if(st==2)w+=t[1]});
+    total+=h;dh+=d;wh+=w;
     document.querySelector(`[data-dh="${it.id}"]`).textContent=d;
     document.querySelector(`[data-mini="${it.id}"]`).style.width=(d/h*100)+"%";
+    document.querySelector(`[data-miniw="${it.id}"]`).style.width=(w/h*100)+"%";
   }));
   document.getElementById("tH").textContent=total+"h";
   document.getElementById("tD").textContent=total/8;
   document.getElementById("dH").textContent=dh+"h";
+  document.getElementById("wH").textContent=wh+"h";
+  // Giờ "đang dở" không cộng vào % hoàn thành — chỉ hiển thị riêng để % không bị thổi lên.
   const p=Math.round(dh/total*100);
   document.getElementById("dP").textContent=p+"%";
   document.getElementById("pBar").style.width=p+"%";
+  document.getElementById("wBar").style.width=(wh/total*100)+"%";
 }
-tree.addEventListener("change",e=>{
-  const c=e.target;if(!c.dataset.k)return;
-  if(c.checked)done[c.dataset.k]=1;else delete done[c.dataset.k];
-  c.closest(".task").classList.toggle("done",c.checked);save();refresh();
+function setState(row,st){
+  const k=row.dataset.k;
+  if(st)done[k]=st;else delete done[k];
+  row.dataset.s=st;row.setAttribute("aria-checked",ARIA[st]);
+  const tag=row.querySelector(".wtag");
+  if(st==2&&!tag){
+    const t=row.querySelector(".t"),em=document.createElement("em");
+    em.className="wtag";em.textContent="đang dở";
+    t.insertBefore(em,t.querySelector(".miss"));  // sau tên task, trước ghi chú (như lúc render)
+  }else if(st!=2&&tag)tag.remove();
+}
+function cycle(row){setState(row,NEXT[+row.dataset.s||0]);save();refresh()}
+tree.addEventListener("click",e=>{const row=e.target.closest(".task");if(row)cycle(row)});
+tree.addEventListener("keydown",e=>{
+  if(e.key!==" "&&e.key!=="Enter")return;
+  const row=e.target.closest(".task");if(!row)return;
+  e.preventDefault();cycle(row);
 });
 document.getElementById("openAll").onclick=()=>tree.querySelectorAll("details").forEach(d=>d.open=true);
 document.getElementById("closeAll").onclick=()=>tree.querySelectorAll("details").forEach(d=>d.open=false);
-document.getElementById("resetAll").onclick=()=>{done={};save();tree.querySelectorAll("input[type=checkbox]").forEach(c=>{c.checked=false;c.closest(".task").classList.remove("done")});refresh()};
+document.getElementById("resetAll").onclick=()=>{tree.querySelectorAll(".task").forEach(r=>setState(r,0));save();refresh()};
 refresh();
 </script>
 </body>

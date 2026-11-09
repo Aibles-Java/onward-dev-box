@@ -2,37 +2,44 @@
 
 *State for the next session. Overwritten by `/save-memory`.*
 
-## Current WIP (2026-07-05)
+## Current WIP (2026-11-09)
 
-- Issues #10, #11, #12, #28 are closed/merged — no action needed there.
-- Issue #13 (Phase 2 acceptance verification): all 4 acceptance criteria
-  re-verified live on branch `feature/issue-13-verify-phase2-acceptance`:
-  `make up-all` → 3 services healthy; `sonarqube/bootstrap.sh` re-run cleanly
-  (idempotent); `make sonar` against `../feature_flag` printed
-  `QUALITY GATE STATUS: PASSED`, `BUILD SUCCESS`, exit 0. Added the previously
-  missing SonarQube Community limitation note (one branch per project, no
-  local PR analysis) to `docs/INFRASTRUCTURE.md` §3.2 (`make sonar` section),
-  and checked off the corresponding `[ ]` → `[x]` line in §6 Definition of
-  done. Docs-only change — see `decisions/0015-issue-13-phase2-verification.md`
-  for why the earlier HANDOFF claim that this limitation was "already
-  documented" was wrong (it pointed at a row that didn't actually cover it).
-- Calibration `Actual`/`Δ` for #3–#13 still empty — needs human's actual hours.
+- Branch `feature/dev-box-v2`. One commit this session: `383695f`
+  `docs(roadmap): mark repo progress with a three-state task tracker` —
+  `index.html` only (84+/31-). Working tree otherwise clean.
+- `index.html` is the "Cây Roadmap Devbox" page that arrived via the upload
+  commit `db2e071`. It is **not** mentioned in `CLAUDE.md` and has no issue,
+  no CI check, and no owner documented. Decide whether it belongs in this repo
+  (and if so, add it to `CLAUDE.md`) — right now it is an orphan artifact that
+  nonetheless holds the only workspace-wide progress view.
+- The page now encodes a repo audit dated 2026-11-09: 12 tasks done (33h),
+  8 in progress (30h, each with a "Còn thiếu" note), 61 not started, of 264h.
+  Re-audit → update the task tuples **and** bump the `devbox-roadmap-seed-N`
+  key, otherwise returning visitors keep the old snapshot.
 
 ## Context to Load
 
-- `decisions/0015-issue-13-phase2-verification.md` — issue #13 close-out
-  rationale + the `make sonar` foreground-truncation gotcha (use
-  `nohup ... &` + poll, not a plain redirect, for the ~15 min run)
-- `decisions/0014-make-sonar-target.md` — why `qualitygate.wait=true` was
-  added beyond the issue's literal command
-- `decisions/0013-quality-gate-json.md` — quality-gate JSON gotchas
-- `decisions/0012-sonar-bootstrap.md` — SonarQube bootstrap gotchas
+- `decisions/0019-roadmap-progress-audit.md` — the tick rule (Makefile counts
+  as the unbuilt CLI only for capability-shaped tasks), why in-progress hours
+  stay out of the %, and the CSS-escape / `file://` / kill-the-server gotchas
+- `decisions/0017-smoke-test-script.md` — why `make smoke` is known-red and
+  is marked in-progress rather than done on the roadmap
+
+## Open items surfaced by the audit (not acted on)
+
+1. `docs/INFRASTRUCTURE.md:51` says `doctor.sh` checks "disk" — it never has.
+   Either add the check or fix the line.
+2. Issue #18 (companion PR to `feature_flag`: retire its `docker-compose.yml`,
+   point its CLAUDE.md/README at dev-box) is still open — the last open item
+   from the Phase 3 list.
+3. `postgres/init/` is database-per-service while the roadmap assumes
+   schema-per-service + `search_path`. Divergence is deliberate so far; worth
+   an explicit decision if more consumer services land.
+4. Calibration `Actual`/`Δ` for issues #3–#13 still empty — needs the human's
+   actual hours.
 
 ## Next steps
 
-1. Push `feature/issue-13-verify-phase2-acceptance`, open PR (Closes #13,
-   base `develop`), move card to Ready For Testing. When merged, use
-   `issue-board.sh done 13` to close the issue.
-2. Remaining open Phase 3 issues: #14 (seed-feature-flag.sh), #15
-   (smoke-test.sh), #16 (RUNBOOK.md), #17 (validate.yml CI), #18 (companion
-   PR to feature_flag retiring its docker-compose.yml).
+1. Push `feature/dev-box-v2` (this session's commit + this memory update).
+2. Decide the fate of `index.html` (own it in `CLAUDE.md`, or move it out).
+3. Pick up #18 if the roadmap work is done for now.
